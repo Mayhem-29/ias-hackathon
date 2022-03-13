@@ -68,16 +68,17 @@ def freeinstance_bytypeid():
     request_typeid = json.load(file)
     # request_typeid = request.get_json()
     final = []
-    key = str(request_typeid["typeid"])
-    if key not in sensor_info.keys():
-        return "No such type id exists"
-    for i in sensor_info[key].keys():
-        if sensor_info[key][i][1] == "False":
-            temp2 = {}
-            temp2["sensor_type_id"] = request_typeid["typeid"]
-            temp2["sensor_instance_id"] = i
-            temp2["sensor_instance_location"] = sensor_info[key][i][0]
-            final.append(temp2)
+    for key in request_typeid["sensor_type_id"]:
+        key = str(key)
+        if key not in sensor_info.keys():
+            return "No such type id exists"
+        for i in sensor_info[key].keys():
+            if sensor_info[key][i][1] == "False":
+                temp2 = {}
+                temp2["sensor_type_id"] = key
+                temp2["sensor_instance_id"] = i
+                temp2["sensor_instance_location"] = sensor_info[key][i][0]
+                final.append(temp2)
     return {"response" : final , "status_code" : 200}
 
 if __name__=="__main__":
