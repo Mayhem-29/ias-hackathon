@@ -7,21 +7,43 @@ import numpy as np
 
 sess = requests.Session()
 
+PLATFORM_PORT = 9300
 
-if __name__ == "__main__":
+platform_endpoints = {
+    "base_url": "http://localhost:" + str(PLATFORM_PORT),
+    "uri": {
+        "get_sensor_info": "/get_sensor_info",
+        "get_model_info": "/get_model_info",
+        "free_instance_by_type_id": "/free_instance_by_type_id",
+        "predict_model": "/predict_model"
+    }
+}
+
+def run_app():
     sensor_data = sys.argv[1]
     model_data = sys.argv[2]
+
     sensor_file = open(sensor_data)
     sensor_req = json.load(sensor_file)
+
     model_file=open(model_data)
     model_req = json.load(model_file)
-    response_model = sess.post('http://localhost:8070/get_pickle', json = model_req).json()
-    sensor_string = str(sensor_req["type_id"][0]) + "," + str(sensor_req["location"])
-    response_sensor = sess.get("http://localhost:8000/getsensordata/" + sensor_string).json()
-    model = pickle.load(open(response_model["pickle_file"], "rb"))
-    prediction = str(model.predict(np.array(response_sensor["data"]).reshape(1,-1))[0])
-    ans = {
-        "output" : prediction ,
-        "status_code" : 200
+
+    payload = {
+        "model_name" : model_req['model_name'] ,
+        "tid" : sensor_req['type_id'][0] , 
+        "location" : sensor_req['location']
     }
-    print (ans)
+
+    prediction = sess.post(platform_endpoints["base_url"] + platform_endpoints["uri"]["predict_model"], json = payload).json()
+
+    return prediction
+
+
+if __name__ == "__main__":
+    while True:
+        optn = input("Enter 1 to run app, 2 to exit: ")
+        if optn=="2":
+            break
+        else:
+            print(run_app())

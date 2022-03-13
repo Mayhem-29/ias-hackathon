@@ -27,6 +27,8 @@ MODEL_PORT = 9200
 PLATFORM_PORT = 9300
 APP_PORT = 9400
 DEPLOYER_PORT = 9500
+NODE_PORT = 9500
+SCH_PORT = 9600
 
 platform_endpoints = {
     "base_url": "http://localhost:" + str(PLATFORM_PORT),
@@ -39,7 +41,7 @@ platform_endpoints = {
 }
 
 scheduler_endpoints = {
-    "base_url": "http://localhost:" + str(DEPLOYER_PORT),
+    "base_url": "http://localhost:" + str(SCH_PORT),
     "uri": {
         "deploy": "/"
     }
@@ -94,24 +96,25 @@ class AppModelMapping(db.Model):
 def get_models_sensors():
 
     models = req_sess.get(platform_endpoints["base_url"] + platform_endpoints["uri"]["get_model_info"]).json()
-    if models.status_code != 200:
+    print(models)
+    if models['status_code'] != 200:
         return {
             "status": False,
             "message": "Something went wrong with model"
         }
 
     model_list = list()
-    for m in models.model_list:
+    for m in models['model_list']:
         model_list.append({
             "model_name": m
         })
     
     sensors = req_sess.get(platform_endpoints["base_url"] + platform_endpoints["uri"]["get_sensor_info"]).json()
     sensor_list = list()
-    for s in sensors.response:
+    for s in sensors['response']:
         sensor_list.append({
-            "sensor_type_id": s.sensor_type_id,
-            "sensor_name": s.sensor_name
+            "sensor_type_id": s['sensor_type_id'],
+            "sensor_name": s['sensor_name']
         })
     
     resp = {
@@ -128,16 +131,16 @@ def get_models_sensors():
 
 @app.route("/get_all_applications", methods=['GET'])
 def get_all_app():
-    apps = AppInfo.query.filter.all()
+    apps = AppInfo.query.filter().all()
     app_list = list()
     for app in apps:
         a = {
-            "app_id": apps.app_id,
-            "app_name": apps.app_name
+            "app_id": app.app_id,
+            "app_name": app.app_name
         }
         app_list.append(a)
 
-    return app_list
+    return { "response": app_list }
 
 
 @app.route("/get_sensor_by_app_id", methods=['POST'])
@@ -147,7 +150,7 @@ def get_sensor_by_app_id():
 
     payload = {
         "app_id": req['app_id'],
-        "sensor_type_id": sensor_type_id_list
+        "typeid" : sensor_type_id_list[0]
     }
 
     response = req_sess.post(platform_endpoints['base_url'] + platform_endpoints['uri']['free_instance_by_type_id'], json=payload).json()

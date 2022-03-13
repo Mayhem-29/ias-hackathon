@@ -90,5 +90,7 @@ def init():
         print("error encountered !!")
 
 
-import os
-os.system("start cmd /k python --version")
+import subprocess
+# subprocess.call(['open', '-W', '-a', 'Terminal.app', 'python', '--args', '--version'])
+
+

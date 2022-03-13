@@ -57,11 +57,11 @@ def get_sensors_info():
 @app.route("/get_model_info", methods=["GET"])
 def get_model_info():
     response_model = sess.get(endpoint["model_manager"]['base_url'] + endpoint["model_manager"]['uri']['list_of_models']).json()
+    print(response_model)
     return response_model
-    # print(response_model)
 
 
-@app.route("/predict_model")
+@app.route("/predict_model", methods=['POST'])
 def predict_model():
     # file = open("dummy.json")
     # req = json.load(file)
@@ -89,7 +89,7 @@ def predict_model():
     return ans
 
 
-@app.route("/free_instance_by_type_id")
+@app.route("/free_instance_by_type_id", methods=['POST'])
 def freeinstance_bytypeid():
     # file = open("dummy2.json")
     # request_typeid = json.load(file)
