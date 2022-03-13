@@ -43,7 +43,7 @@ platform_endpoints = {
 scheduler_endpoints = {
     "base_url": "http://localhost:" + str(SCH_PORT),
     "uri": {
-        "deploy": "/"
+        "deploy": "/sendInfo"
     }
 }
 
@@ -150,7 +150,7 @@ def get_sensor_by_app_id():
 
     payload = {
         "app_id": req['app_id'],
-        "typeid" : sensor_type_id_list[0]
+        "sensor_type_id" : sensor_type_id_list
     }
 
     response = req_sess.post(platform_endpoints['base_url'] + platform_endpoints['uri']['free_instance_by_type_id'], json=payload).json()
@@ -193,7 +193,7 @@ def deploy():
             }
         )
     
-    response = req_sess.post(scheduler_endpoints["base_url"] + scheduler_endpoints["uri"][""], json=payload).json()
+    response = req_sess.post(scheduler_endpoints["base_url"] + scheduler_endpoints["uri"]["deploy"], json=payload).json()
     return response
 
 

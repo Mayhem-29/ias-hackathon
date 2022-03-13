@@ -40,7 +40,8 @@ endpoint = {
             "get_sensor_info": "/get_sensor_info",
             "get_model_info": "/get_model_info",
             "free_instance_by_type_id": "/free_instance_by_type_id",
-            "predict_model": "/predict_model"
+            "predict_model": "/predict_model",
+            "update_sensor_instance": "/update_sensor_instance"
         }
     },
     "node_manager": {
@@ -64,10 +65,9 @@ def get_schedule_app():
 
     payload = {
         "app_id": req['app_id'],
-        "sensors": sensors_type_id
     }
 
-    free_sensor_instances = session.post(endpoint['platform_manager']['base_url'] + endpoint['platform_manager']['uri']['free_instance_by_type_id'], json = payload)
+    free_sensor_instances = session.post(endpoint['app_manager']['base_url'] + endpoint['app_manager']['uri']['get_sensor_by_app_id'], json = payload)
     
     for i in free_sensor_instances:
         if i['sensor_location'] == req['location']:
@@ -84,6 +84,16 @@ def get_schedule_app():
         for j in range(i['n_sensor_instance']):
             used_sensors.append(sensor_instance_list[i['sensor_type_id']][j])
             # function to mark the sensor_instance_list[i['sensor_type_id']][j] as allocated
+
+            payload = {
+                "sensor_type_id": i['sensor_type_id'],
+                "sensor_instance_id": sensor_instance_list[i['sensor_type_id']][j]
+            }
+
+            resp = session.post(endpoint["platform_manager"]["base_url"] + endpoint["platform_manager"]["uri"]["update_sensor_instance"])
+            resp = resp.content.encoding("ascii")
+
+
 
     node_mgr = {
         "app_id" : req["app_id"],
