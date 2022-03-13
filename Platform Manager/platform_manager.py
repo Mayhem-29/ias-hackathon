@@ -68,10 +68,12 @@ def freeinstance_bytypeid():
     request_typeid = json.load(file)
     # request_typeid = request.get_json()
     final = []
+    if len(request_typeid["sensor_type_id"]) == 0:
+        return {"response" : "No type id exists", "status_code" : 500}
     for key in request_typeid["sensor_type_id"]:
         key = str(key)
         if key not in sensor_info.keys():
-            return "No such type id exists"
+            return {"response" : "No such type id exists", "status_code" : 500}
         for i in sensor_info[key].keys():
             if sensor_info[key][i][1] == "False":
                 temp2 = {}
