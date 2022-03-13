@@ -11,9 +11,9 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = "password"
 
 username = "root"
-password = "root123"
+password = "Root1234"
 server = "localhost:3306"
-database = "ias_hackathon"
+database = "platformdb"
 
 app.config['SQLALCHEMY_DATABASE_URI'] = f"mysql+pymysql://{username}:{password}@{server}/{database}"
 app.config['SESSION_TYPE'] = "sqlalchemy"
@@ -22,6 +22,10 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 app.config['SESSION_SQLALCHEMY'] = db
 sess = Session(app)
+
+SENSOR_PORT = 9100
+MODEL_PORT = 9200
+PLATFORM_PORT = 9300
 
 @app.route("/list_of_models", methods=['GET'])
 def get_list():
@@ -47,4 +51,4 @@ def get_pkl():
         return jsonify({"pickle_file": pickle_file})
 
 if(__name__ == "__main__"):
-    app.run(port="8070", debug = True)
+    app.run(port=MODEL_PORT, debug = True)

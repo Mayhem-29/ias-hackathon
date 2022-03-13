@@ -8,11 +8,33 @@ sess = requests.Session()
 
 app = Flask(__name__)
 
+SENSOR_PORT = 9100
+MODEL_PORT = 9200
+PLATFORM_PORT = 9300
+
 sensor_info = {}
+endpoint = {
+    "sensor_manager": {
+        "base_url": "http://localhost:"+str(SENSOR_PORT), 
+        "uri": {
+            "sensorinfo": "/sensorinfo",
+            "getsensordata": "/getsensordata"
+        }
+    }, 
+    "model_manager": {
+        "base_url": "http://localhost:" + str(MODEL_PORT),
+        "uri": {
+            "list_of_models": "/list_of_models",
+            "get_pickle": "/get_pickle",
+
+        }
+    }
+}
+
 
 @app.route("/get_sensor_info", methods=["GET"])
 def get_sensors_info():
-    response_sensor = sess.get("http://localhost:8000/sensorinfo").json()
+    response_sensor = sess.get(endpoint["sensor_manager"]['base_url'] + endpoint["sensor_manager"]['uri']['sensorinfo']).json()
     response_list = []
     for i in response_sensor.keys():
         response_sensor2 = {}
@@ -28,45 +50,50 @@ def get_sensors_info():
             response_sensor2["sensor_instance"].append(temp)
         response_list.append(response_sensor2)
     print(response_sensor2)
-    return {"response" : list(response_list) , "status_code" : 200}
+    return {"response": list(response_list), "status_code": 200}
     # print(response_sensor)
-    
+
 
 @app.route("/get_model_info", methods=["GET"])
 def get_model_info():
-    response_model = sess.get('http://localhost:8070/list_of_models').json()
+    response_model = sess.get(endpoint["model_manager"]['base_url'] + endpoint["model_manager"]['uri']['list_of_models']).json()
     return response_model
     # print(response_model)
 
+
 @app.route("/predict_model")
 def predict_model():
-    file = open("dummy.json")
-    req = json.load(file)
-    # response = request.get_json()
+    # file = open("dummy.json")
+    # req = json.load(file)
+    req = request.get_json()
     if str(req["tid"]) not in sensor_info.keys():
-        return {"output" : "Can't deploy" , "status_code" : 500}
+        return {"output": "Can't deploy", "status_code": 500}
     model_json = {
-        "model_name" : req["model_name"]
+        "model_name": req["model_name"]
     }
-    response_model = sess.post('http://localhost:8070/get_pickle', json = model_json).json()
+    response_model = sess.post(
+        endpoint["model_manager"]['base_url'] + endpoint["model_manager"]['uri']['get_pickle'], json=model_json).json()
     sensor_string = str(req["tid"]) + "," + str(req["location"])
-    response_sensor = sess.get("http://localhost:8000/getsensordata/" + sensor_string).json()
+    response_sensor = sess.get(
+        endpoint["sensor_manager"]['base_url'] + endpoint["sensor_manager"]['uri']['getsensordata'] + "/" + sensor_string).json()
     # print(response_model)
     # print(type(response_model["pickle_file"]))
     # print(response_sensor)
     model = pickle.load(open(response_model["pickle_file"], "rb"))
-    prediction = str(model.predict(np.array(response_sensor["data"]).reshape(1,-1))[0])
+    prediction = str(model.predict(
+        np.array(response_sensor["data"]).reshape(1, -1))[0])
     ans = {
-        "output" : prediction ,
-        "status_code" : 200
+        "output": prediction,
+        "status_code": 200
     }
     return ans
 
-@app.route("/freeinstance_bytypeid")
+
+@app.route("/free_instance_by_type_id")
 def freeinstance_bytypeid():
-    file = open("dummy2.json")
-    request_typeid = json.load(file)
-    # request_typeid = request.get_json()
+    # file = open("dummy2.json")
+    # request_typeid = json.load(file)
+    request_typeid = request.get_json()
     final = []
     key = str(request_typeid["typeid"])
     if key not in sensor_info.keys():
@@ -78,10 +105,11 @@ def freeinstance_bytypeid():
             temp2["sensor_instance_id"] = i
             temp2["sensor_instance_location"] = sensor_info[key][i][0]
             final.append(temp2)
-    return {"response" : final , "status_code" : 200}
+    return {"response": final, "status_code": 200}
 
-if __name__=="__main__":
-    resp = sess.get("http://localhost:8000/sensorinfo").json()
+
+if __name__ == "__main__":
+    resp = sess.get(endpoint["sensor_manager"]['base_url'] + endpoint["sensor_manager"]['uri']['sensorinfo']).json()
     for i in resp.keys():
         sensor_info[i] = {}
         for j in resp[i].keys():
@@ -91,4 +119,4 @@ if __name__=="__main__":
             sensor_info[i][j].append(resp[i][j])
             sensor_info[i][j].append("False")
     print(sensor_info)
-    app.run(port=8088, debug=True) 
+    app.run(port=PLATFORM_PORT, debug=True)

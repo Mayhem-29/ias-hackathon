@@ -1,14 +1,22 @@
-from flask import Flask,render_template,request,session,logging,url_for,redirect,flash, jsonify
+from flask import Flask
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session,sessionmaker
 import json
 
+username = "root"
+password = "Root1234"
+server = "localhost:3306"
+database = "platformdb"
 
-engine=create_engine("mysql+pymysql://root:root123@localhost/ias_hackathon")
+# engine=create_engine("mysql+pymysql://root:root123@localhost/ias_hackathon")
+engine=create_engine(f"mysql+pymysql://{username}:{password}@{server}/{database}")
 db=scoped_session(sessionmaker(bind=engine))
 
 app=Flask(__name__)
 
+SENSOR_PORT = 9100
+MODEL_PORT = 9200
+PLATFORM_PORT = 9300
 
 @app.route("/")
 def home():
@@ -53,4 +61,4 @@ def sensorinfo():
     return res
 
 if __name__=="__main__":
-    app.run(port=8000, debug=True)
+    app.run(port=SENSOR_PORT, debug=True)

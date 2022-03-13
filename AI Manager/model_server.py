@@ -6,12 +6,12 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_session import Session
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = "password"
+app.config['SECRET_KEY'] = "dub_nation"
 
 username = "root"
-password = "root123"
+password = "Root1234"
 server = "localhost:3306"
-database = "ias_hackathon"
+database = "platformdb"
 
 app.config['SQLALCHEMY_DATABASE_URI'] = f"mysql+pymysql://{username}:{password}@{server}/{database}"
 app.config['SESSION_TYPE'] = "sqlalchemy"

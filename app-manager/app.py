@@ -22,30 +22,24 @@ app.config['SESSION_SQLALCHEMY'] = db
 sess = Session(app)
 req_sess = requests.Session()
 
-sensor_endpoints = {
-    "base_url": "http://localhost:8000",
-    "uri": {
-        "get_all_sensors": "/",
-        "get_free_sensors_by_typeid": "/get_free_sensors_by_typeid"
-    }
-}
-
-model_endpoints = {
-    "base_url": "http://localhost:8000",
-    "uri": {
-        "get_all_models": "/"
-    }
-}
+SENSOR_PORT = 9100
+MODEL_PORT = 9200
+PLATFORM_PORT = 9300
+APP_PORT = 9400
+DEPLOYER_PORT = 9500
 
 platform_endpoints = {
-    "base_url": "",
+    "base_url": "http://localhost:" + str(PLATFORM_PORT),
     "uri": {
-        "get_models_sensors": "/"
+        "get_sensor_info": "/get_sensor_info",
+        "get_model_info": "/get_model_info",
+        "free_instance_by_type_id": "/free_instance_by_type_id",
+        "predict_model": "/predict_model"
     }
 }
 
 scheduler_endpoints = {
-    "base_url": "",
+    "base_url": "http://localhost:" + str(DEPLOYER_PORT),
     "uri": {
         "deploy": "/"
     }
@@ -96,10 +90,10 @@ class AppModelMapping(db.Model):
 
 
 # To Developers
-@app.route("get_models_sensors", methods=['GET'])
+@app.route("/get_models_sensors", methods=['GET'])
 def get_models_sensors():
 
-    models = req_sess.get(model_endpoints["base_url"] + model_endpoints["uri"]["get_all_models"]).json()
+    models = req_sess.get(platform_endpoints["base_url"] + platform_endpoints["uri"]["get_model_info"]).json()
     if models.status_code != 200:
         return {
             "status": False,
@@ -112,7 +106,7 @@ def get_models_sensors():
             "model_name": m
         })
     
-    sensors = req_sess.get(sensor_endpoints["base_url"] + sensor_endpoints["uri"]["get_all_sensors"]).json()
+    sensors = req_sess.get(platform_endpoints["base_url"] + platform_endpoints["uri"]["get_sensor_info"]).json()
     sensor_list = list()
     for s in sensors.response:
         sensor_list.append({
@@ -156,7 +150,7 @@ def get_sensor_by_app_id():
         "sensor_type_id": sensor_type_id_list
     }
 
-    response = req_sess.post(sensor_endpoints['base_url'] + sensor_endpoints['uri']['get_free_sensors_by_typeid'], json=payload).json()
+    response = req_sess.post(platform_endpoints['base_url'] + platform_endpoints['uri']['free_instance_by_type_id'], json=payload).json()
     return response
 
 
@@ -164,7 +158,7 @@ def get_sensor_by_app_id():
 ## app_id start time end time sensors:[ { sensor_type_id: 123, n_sensor_instance: 123  }], location: str
 # ]
 
-@app.route("deploy")
+@app.route("/deploy")
 def deploy():
     req = request.get_json()
 
@@ -202,4 +196,4 @@ def deploy():
 
 
 if(__name__ == "__main__"):
-    app.run(port="9000", debug=True)
+    app.run(port=APP_PORT, debug=True)

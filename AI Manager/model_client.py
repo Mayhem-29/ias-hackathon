@@ -6,7 +6,8 @@ def model_store():
     model_name = "digit_pred"
     input_format = "image"
     output_format = "int"
-    url="https://drive.google.com/file/d/171qJj28QsBKv4JUO2sXnyDGVqOFd3v_u/view?usp=sharing"
+    # url="https://drive.google.com/file/d/171qJj28QsBKv4JUO2sXnyDGVqOFd3v_u/view?usp=sharing"
+    url = "/Users/ashishrai/Documents/Ashish/IIITH/Sem2-courses/Courses/IAS/Project/code/hack1/AI Manager/model.pkl"
     request_dict = {
         "model_name": model_name,
         "input_format": input_format,
