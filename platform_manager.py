@@ -13,7 +13,17 @@ sensor_info = {}
 @app.route("/get_sensor_info", methods=["GET"])
 def get_sensors_info():
     response_sensor = sess.get("http://localhost:8000/sensorinfo").json()
-    return response_sensor
+    response_sensor2 = {}
+    for i in response_sensor.keys():
+        response_sensor2["sensor_id"] = i
+        response_sensor2["sensor_instance"] = []
+        for j in response_sensor[i].keys():
+            temp = {}
+            temp["id"] = j
+            temp["location"] = response_sensor[i][j]
+            response_sensor2["sensor_instance"].append(temp)
+    print(response_sensor2)
+    return response_sensor2
     # print(response_sensor)
     
 
@@ -28,7 +38,7 @@ def predict_model():
     file = open("dummy.json")
     req = json.load(file)
     # response = request.get_json()
-    if req["tid"] not in sensor_info.keys():
+    if str(req["tid"]) not in sensor_info.keys():
         return {"output" : "Can't deploy" , "status_code" : 500}
     model_json = {
         "model_name" : req["model_name"]
@@ -49,14 +59,21 @@ def predict_model():
 
 @app.route("/freeinstance_bytypeid")
 def freeinstance_bytypeid():
-    request_typeid = request.get_json()
+    file = open("dummy2.json")
+    request_typeid = json.load(file)
+    # request_typeid = request.get_json()
     final = []
-    if request_typeid["typeid"] not in sensor_info.keys():
+    key = str(request_typeid["typeid"])
+    if key not in sensor_info.keys():
         return "No such type id exists"
-    for i in sensor_info[request_typeid["typeid"]].keys():
-        if sensor_info[request_typeid["typeid"]][i][1] == "False":
-            final.append(i)
-    return {"response" : final}
+    for i in sensor_info[key].keys():
+        if sensor_info[key][i][1] == "False":
+            temp2 = {}
+            temp2["sensor_type_id"] = request_typeid["typeid"]
+            temp2["sensor_instance_id"] = i
+            temp2["sensor_instance_location"] = sensor_info[key][i][0]
+            final.append(temp2)
+    return {"response" : final , "status_code" : 200}
 
 if __name__=="__main__":
     resp = sess.get("http://localhost:8000/sensorinfo").json()
