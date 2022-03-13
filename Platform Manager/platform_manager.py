@@ -83,6 +83,14 @@ def freeinstance_bytypeid():
                 final.append(temp2)
     return {"response" : final , "status_code" : 200}
 
+@app.route("/update_sensor_instance", methods=["POST"])
+def update_sensor_instance():
+    request_updation = request.get_json
+    if str(request_updation["sensor_type_id"]) not in sensor_info.keys() or str(request_updation["sensor_instance_id"]) not in sensor_info[str(request_updation["sensor_type_id"])].keys():
+        return {"response" : "Failure" , "status_code" : 500}
+    sensor_info[str(request_updation["sensor_type_id"])][str(request_updation["sensor_instance_id"])][1] = not sensor_info[str(request_updation["sensor_type_id"])][request_updation["sensor_instance_id"]][1]
+    return {"response" : "Success" , "status_code" : 200}
+
 if __name__=="__main__":
     resp = sess.get("http://localhost:8000/sensorinfo").json()
     for i in resp.keys():
