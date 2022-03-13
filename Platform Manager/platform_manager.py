@@ -13,17 +13,22 @@ sensor_info = {}
 @app.route("/get_sensor_info", methods=["GET"])
 def get_sensors_info():
     response_sensor = sess.get("http://localhost:8000/sensorinfo").json()
-    response_sensor2 = {}
+    response_list = []
     for i in response_sensor.keys():
-        response_sensor2["sensor_id"] = i
+        response_sensor2 = {}
+        response_sensor2["sensor_type_id"] = i
         response_sensor2["sensor_instance"] = []
         for j in response_sensor[i].keys():
+            if j == i:
+                response_sensor2["sensor_name"] = response_sensor[i][j]
+                continue
             temp = {}
             temp["id"] = j
             temp["location"] = response_sensor[i][j]
             response_sensor2["sensor_instance"].append(temp)
+        response_list.append(response_sensor2)
     print(response_sensor2)
-    return response_sensor2
+    return {"response" : list(response_list) , "status_code" : 200}
     # print(response_sensor)
     
 
@@ -80,6 +85,8 @@ if __name__=="__main__":
     for i in resp.keys():
         sensor_info[i] = {}
         for j in resp[i].keys():
+            if i == j:
+                continue
             sensor_info[i][j] = []
             sensor_info[i][j].append(resp[i][j])
             sensor_info[i][j].append("False")

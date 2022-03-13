@@ -34,6 +34,12 @@ def sensorinfo():
     
     tid = db.execute("SELECT tyid from stypedb").fetchall()
     res={}
+    res2={}
+    sen_name = db.execute("SELECT sensor_name from stypedb").fetchall()
+    ct=0
+    for i in tid:
+        res2[i[0]]=sen_name[ct][0]
+        ct += 1
     print(tid)
     for i in tid:
         tp={}
@@ -41,6 +47,7 @@ def sensorinfo():
         for j in stid:
             loc1 = db.execute("SELECT loc from sinsdb where insid=:t",{"t":j[0]}).fetchone()
             tp[j[0]]=loc1[0]
+        tp[i[0]]=res2[i[0]]
         res[i[0]]=tp
   
     return res
