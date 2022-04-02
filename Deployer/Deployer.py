@@ -71,9 +71,11 @@ def get_schedule_app():
             if str(x['_id'])==req["request_id"]:
                 app_path=x['app_path']
                 stand_alone=x['stand_alone']
+                location=x['location']
                 break
-        node_mgr["app_path"]='app_path'
-        node_mgr["stand_alone"]='stand_alone'
+        node_mgr["app_path"]=app_path
+        node_mgr["stand_alone"]=stand_alone
+        node_mgr["location"]=location
     # else:
     #     print("80 App sent for termination")
     status = session.post(endpoint['node_manager']['base_url'] + endpoint['node_manager']['uri']['send_to_node_manager'], json=node_mgr).json()
