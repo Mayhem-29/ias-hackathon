@@ -37,7 +37,10 @@ SCH_PORT = 9600
 ai_manager_endpoints = {
     "base_url": "http://localhost:" + str(MODEL_PORT),
     "uri": {
-        "get_model_list": "/get_model_list"
+        "get_model_list": "/all_model_details",
+        "model_details": "/model_details",
+        "list_models": "/list_models"
+
     }
 
 }
