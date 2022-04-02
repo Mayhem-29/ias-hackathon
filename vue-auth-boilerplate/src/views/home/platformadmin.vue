@@ -1,7 +1,7 @@
 <template>
   <div
     uk-height-viewport="offset-bottom: 80px"
-    class="uk-flex uk-flex-center uk-flex-middle uk-flex-column"
+    class="uk-flex uk-flex-middle uk-flex-column"
   >
     <h1>Platform Admin</h1>
     <FormulateForm
@@ -9,63 +9,60 @@
     v-model="form_values"
     @submit="downloadJSON"
   >
-    <h2 class="form-title">Form</h2>
-    <p>
-     Please Fill the required information.
-    </p>
-    <span >
-    <FormulateInput
-      name="model_name"
-      type="text"
-      label="Model Name"
-      placeholder="Model Name"
-      validation="required"
-    />
-    <FormulateInput
-      name="model_author"
-      type="text"
-      label="Model Author"
-      placeholder="Model Author"
-      validation="required"
-    />
-    </span>
+
+   
     <span class="span-float">
     <FormulateInput
     type = "group"
-    name = "model_input"
+    name = "sensor_data"
     :repeatable="true"
-    label = "Model Input"
+    label = "Sensor Data"
     add-label="Add Input"
     validation="required"
-    #default="{ index }"
-    >
-       <FormulateInput
-    name="input_number"
-    type = "number"
-    :value="index+1"
+        >
+     <FormulateInput
+      name="sensor_type"
+      type="select"
+      :options="{type_a:'Type A',type_b:'Type B'}"
+      label="Sensor Type"
+      placeholder="Sensor Type"
+      validation="required"
     />
         <FormulateInput
-      name="input_type"
-      :options="{string: 'String', float: 'Float', int : 'Int', image: 'Image'}"
-      type="select"
-      label="Input Type"
+      name="sensor_ip"
+      type="text"
+      label="Sensor IP"
+      placeholder="Sensor IP"
+      validation="required"
     />
+      <FormulateInput
+      name="sensor_port"
+      type="text"
+      label="Sensor Port"
+      placeholder="Sensor Port"
+      validation="required"
+    />
+      <FormulateInput
+      name="sensor_location"
+      type="text"
+      label="Sensor Location"
+      placeholder="Sensor Location"
+      validation="required"
+    />
+      <FormulateInput
+      name="sensor_instance_count"
+      type="number"
+      label="Sensor Instance Count"
+      placeholder="Sensor Instance Count"
+      validation="required"
+    />
+
+     
  
     </FormulateInput>
     </span>
-      <FormulateInput
-      name="model_input_format"
-      type="text"
-      label="Model Input Format"
-      placeholder="Model Input Format"
-      validation="required"
-    />
-    <FormulateInput
-      name="model_output"
-      :options="{string: 'String', float: 'Float', int : 'Int', image: 'Image'}"
-      type="select"
-      label="Model Output"
-    />
+     
+   
   
     <pre
       class="code"
@@ -109,4 +106,7 @@ export default {
 // .span-float{
 //   float:right;
 // }
+.login-form{
+    width:800px;
+}
 </style>

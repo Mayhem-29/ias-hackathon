@@ -1,9 +1,9 @@
 <template>
   <div
     uk-height-viewport="offset-bottom: 80px"
-    class="uk-flex uk-flex-center uk-flex-middle uk-flex-column"
+    class="uk-flex uk-flex-middle uk-flex-column"
   >
-    <h1>Data Scientist Form</h1>
+    <h1>Data Scientist Form </h1>
      <FormulateInput
   type="file"
   name="file"
@@ -41,12 +41,13 @@
     label = "Model Input"
     add-label="Add Input"
     validation="required"
-    #default="{ index }"
+   
     >
        <FormulateInput
-    name="input_number"
-    type = "number"
-    :value="index+1"
+    name="field_name"
+    type = "text"
+    label="Field Name"
+    placeholder="Field Name"
     />
         <FormulateInput
       name="input_type"
@@ -102,7 +103,8 @@ export default {
   data() {
     return {
       form_values : {},
-      file : null
+      file : null,
+      message:"hello"
 
     }
   },

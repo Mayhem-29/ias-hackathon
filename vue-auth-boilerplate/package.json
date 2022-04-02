@@ -35,8 +35,10 @@
     "uikit": "^3.5.7",
     "vue": "^2.6.12",
     "vue-formulate": "^0.12.1",
+    "vue-js-modal": "^1.3.35",
     "vue-router": "^3.4.3",
     "vue-snack": "^0.1.4",
+    "vuetify": "^2.6.4",
     "vuex": "^3.5.1"
   },
   "devDependencies": {

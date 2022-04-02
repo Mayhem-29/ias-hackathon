@@ -7,7 +7,8 @@ import UIkit from "uikit";
 import Icons from "uikit/dist/js/uikit-icons";
 import ButtonSpinner from "@/components/globals/ButtonSpinner";
 import VueFormulate from '@braid/vue-formulate'
-
+import vmodal from 'vue-js-modal'
+Vue.use(vmodal)
 UIkit.use(Icons);
 window.UIkit = UIkit;
 
@@ -17,7 +18,7 @@ window._ = require("lodash");
 require("./styles/index.scss");
 require('../node_modules/@braid/vue-formulate/themes/snow/snow.scss');
 require("vue-snack/dist/vue-snack.min.css");
-
+import 'vue-js-modal/dist/styles.css'
 Vue.config.productionTip = false;
 
 window.Event = new Vue();
