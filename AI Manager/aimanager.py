@@ -2,53 +2,75 @@ from flask import Flask
 from flask import session
 from flask import jsonify
 from flask import request
-from flask_sqlalchemy import SQLAlchemy
-from flask_session import Session
-
-from model_server import Model_db
+from flask_mongoalchemy import MongoAlchemy
+import pymongo
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = "password"
 
-username = "root"
-password = "Root1234"
-server = "localhost:3306"
-database = "platformdb"
+conn_str = 'mongodb+srv://hackathon:hackathon@hackathon.wgs03.mongodb.net/Hackathon?retryWrites=true&w=majority'
 
-app.config['SQLALCHEMY_DATABASE_URI'] = f"mysql+pymysql://{username}:{password}@{server}/{database}"
-app.config['SESSION_TYPE'] = "sqlalchemy"
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+client = pymongo.MongoClient(conn_str)
+db = client["Hackathon"]
+collection = db["ModelDB"]
 
-db = SQLAlchemy(app)
-app.config['SESSION_SQLALCHEMY'] = db
-sess = Session(app)
 
 SENSOR_PORT = 9100
 MODEL_PORT = 9200
 PLATFORM_PORT = 9300
 
+
+@app.route("/model", methods=['POST'])
+def model_store():
+    req = request.get_json()
+    myquery = {"model_name":req["model_name"]}
+    response = collection.find(myquery)
+    if(response == None):
+        collection.insert_one(req)
+        return "model stored"
+    return "model already exists"
+
 @app.route("/list_of_models", methods=['GET'])
 def get_list():
-    list_a = Model_db.query.filter().all()
+    list_a = collection.find()
     model_list = list()
-    for j in range(len(list_a)):
-        model_list.append(list_a[j].model_name)
+    for iter in list_a:
+        model_list.append(iter["model_name"])
     return jsonify({"model_list": model_list, "status_code": 200})
 
-@app.route("/get_pickle", methods=['POST'])
-def get_pkl():  
+
+@app.route("/get_pickle_location", methods=['POST'])
+def get_pkl():
     req = request.get_json()
-    model_nam=req.get('model_name')
-    list_a = Model_db.query.filter().all()
+    model_nam = req.get('model_name')
+    list_a = collection.find()
     pickle_file = ""
-    for j in range(len(list_a)):
-        if(list_a[j].model_name==model_nam):
-            pickle_file = list_a[j].pkl_url
+    for iter in (list_a):
+        if(iter["model_name"] == model_nam):
+            pickle_file = iter["pkl_url"]
             break
-    if(pickle_file==""):
-        return jsonify({"pickle_file": "pickle file not found"})
+    if(pickle_file == ""):
+        return jsonify({"pickle_file": "pickle file not found", "status_code":500})
     else:
-        return jsonify({"pickle_file": pickle_file})
+        return jsonify({"pickle_file": pickle_file, "status_code":200})
+
+@app.route("/model_details", methods=['POST'])
+def model_details():
+    req = request.get_json()
+    model_nam = req.get('model_name')
+    model_info = {}
+    list_a = collection.find()
+    for iter in list_a:
+        if(iter["model_name"] == model_nam):
+            model_info["no_of_inputs"] = iter["no_of_inputs"]
+            model_info["input_data"] = iter["input_data"]
+            model_info["input_format"] = iter["input_format"]
+            model_info["output_format"] = iter["output_format"]
+            model_info["model_description"] = iter["model_description"]
+    if(model_info == ""):
+        return jsonify({"status_code": 500})
+    else:
+        return jsonify({"model_info": model_info, "status_code": 200})
+
 
 if(__name__ == "__main__"):
-    app.run(port=MODEL_PORT, debug = True)
+    app.run(port=MODEL_PORT, debug=True)
