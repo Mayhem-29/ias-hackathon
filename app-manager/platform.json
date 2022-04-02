@@ -1,0 +1,9 @@
+{
+    "SENSOR_PORT" : "9100",
+    "MODEL_PORT" : "9200",
+    "PLATFORM_PORT" : "9300",
+    "APP_PORT" : "9400",
+    "DEPLOYER_PORT" : "9500",
+    "NODE_PORT" : "9500",
+    "SCH_PORT" : "9600"
+}
