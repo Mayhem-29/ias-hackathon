@@ -80,16 +80,12 @@ def model_store(data):
     file_json = open("modeldata.json")
     model_data = json.load(file_json)
     file_json.close()
-    response = req_sess.post("http://localhost:" + str(MODEL_PORT) + "/get_prediction", json=model_data).content
-    print(response)
     
-
 def savefilestoazure(zip_file,model_name):
     service = ShareFileClient.from_connection_string(conn_str="https://hackathonfilesstorage.file.core.windows.net/DefaultEndpointsProtocol=https;AccountName=hackathonfilestorage;AccountKey=gdZHKPvMvlkDnpMcxMxu2diC/bRqvjptH7qJlbx5VI/95L/p6H932ZOTZwg5kuWbyUJ6Y8TCrh3nqIlyG+YD2g==;EndpointSuffix=core.windows.net", share_name="hackathon/Model_Package", file_path=model_name+".zip")
     
     with open(zip_file, "rb") as source_file:
       service.upload_file(source_file)
-
 
 @app.route('/upload')
 def upload_file():
@@ -108,7 +104,6 @@ def upload():
       except zipfile.BadZipfile:
          return False
 
-    
       source_folder = os.getcwd() + "/temp"
       os.mkdir(source_folder)
       unzip_file(f.filename,source_folder)
