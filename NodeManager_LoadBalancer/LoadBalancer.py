@@ -13,7 +13,7 @@ SENSOR_PORT = 9100
 MODEL_PORT = 9200
 LOAD_PORT = 9300
 APP_PORT = 9400
-DEPLOYER_PORT = 9500
+DEPLOYER_PORT = 9900
 NODE_PORT = 9500
 SCH_PORT = 9600
 
@@ -62,12 +62,12 @@ def get_node_id():
     and do load balancing on basis of num of apps running
     """
 
-    min_load=sys.maxint
+    min_load=1e9
     resultant_node=""
     for x in mycollection.find():
-        if x['list_of_appInst']<min_load:
-            min_load=x['list_of_appInst']
-            resultant_node=x['node_id']
+        if len(x['list_of_app_inst'])<min_load:
+            min_load=len(x['list_of_app_inst'])
+            resultant_node=str(x['_id'])
     reply={
         'node_id':resultant_node,
         'message':"Node Assigned.."

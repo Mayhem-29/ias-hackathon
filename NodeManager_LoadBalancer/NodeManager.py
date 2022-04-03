@@ -11,7 +11,7 @@ SENSOR_PORT = 9100
 MODEL_PORT = 9200
 LOAD_PORT = 9300
 APP_PORT = 9400
-DEPLOYER_PORT = 9500
+DEPLOYER_PORT = 9900
 NODE_PORT = 9500
 SCH_PORT = 9600
 
@@ -88,7 +88,7 @@ def get_schedule_app():
         deploy["node_id"]=node_id
         print(load_reply["message"])
 
-    session.post(endpoint['deployer']['base_url'] + endpoint['deployer']['uri']['send_to_deployer'], json=deploy).json()
+    status = session.post(endpoint['deployer']['base_url'] + endpoint['deployer']['uri']['send_to_deployer'], json=deploy).json()
     """
     status={
         "status"

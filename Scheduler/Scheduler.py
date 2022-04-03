@@ -20,7 +20,7 @@ SENSOR_PORT = 9100
 MODEL_PORT = 9200
 LOAD_PORT = 9300
 APP_PORT = 9400
-DEPLOYER_PORT = 9500
+DEPLOYER_PORT = 9900
 NODE_PORT = 9500
 SCH_PORT = 9600
 
@@ -69,7 +69,9 @@ Termination_queue=[]
 
 @app.route('/sendInfo',methods=['POST'])
 def getUserInput():
+    #print("72")
     response=request.get_json()
+    #print("74")
     """
     response={
         app_inst_id: str
@@ -83,9 +85,11 @@ def getUserInput():
     """
     #1
     mycollection.insert_one(response)
+    #print("88")
    
     #2
-    heapq.heappush(Scheduler_queue,(response["start_time"],response["end_time"],response["app_ins_id"],response["stand_alone"]))
+    heapq.heappush(Scheduler_queue,(response["start_time"],response["end_time"],response["app_inst_id"],response["stand_alone"]))
+    #print("92")
     result={
         "status":"true",
         "message":"Application Scheduled..."
