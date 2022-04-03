@@ -16,11 +16,11 @@ NODE_PORT = 9500
 SCH_PORT = 9600
 
 
-DeployerURL="http://localhost:8080"
+# DeployerURL="http://localhost:8080"
 
-uri={
-    "userInput":"/get_schedule_app"
-}
+# uri={
+#     "userInput":"/get_schedule_app"
+# }
 
 scheduler_endpoints = {
     "base_url": "http://localhost:" + str(DEPLOYER_PORT),

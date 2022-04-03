@@ -1,3 +1,4 @@
+from crypt import methods
 from email.policy import default
 import requests
 from flask import Flask, session, jsonify, request
@@ -6,9 +7,8 @@ from flask_session import Session
 from sqlalchemy import false
 from werkzeug.utils import secure_filename
 import json
-import os
-import sys
-import zipfile
+
+from utils import kafka
 
 
 app = Flask(__name__)
@@ -35,7 +35,8 @@ SCH_PORT = 9600
 ai_manager_endpoints = {
     "base_url": "http://localhost:" + str(MODEL_PORT),
     "uri": {
-        "get_model_list": "/get_model_list"
+        "get_model_list": "/get_model_list",
+        "get_prediction": "/get_pickle"
     }
 
 }
@@ -59,18 +60,12 @@ scheduler_endpoints = {
 
 
 
-
-
-
-
 def read_json(file_name):
     with open(file_name, "r") as f:
         return json.load(f)
 
 
 #DEVELOPER VIEW
-
-
 
 @app.route("/get_model_list", methods=["GET"])
 def get_model_list():
@@ -123,6 +118,7 @@ def get_sensor_list():
     sensor_info = req_sess.get(platform_endpoints["base_url"] + platform_endpoints["uri"]["get_sensor_info"]).json() #kafka
     return sensor_info
 
+
 @app.route("/get_app_list", methods=["GET"])
 def get_app_list():
     '''
@@ -135,7 +131,7 @@ def get_app_list():
             "app_id": str(app['_id']),
             "app_name": app['app_name']})
 
-    return jsonify(app_list_json)s
+    return jsonify(app_list_json)
 
 
 #SCHEDULER

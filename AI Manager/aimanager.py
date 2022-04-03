@@ -27,6 +27,7 @@ SENSOR_PORT = 9100
 MODEL_PORT = 9200
 PLATFORM_PORT = 9300
 
+
 @app.route("/list_of_models", methods=['GET'])
 def get_list():
     list_a = Model_db.query.filter().all()
@@ -34,6 +35,7 @@ def get_list():
     for j in range(len(list_a)):
         model_list.append(list_a[j].model_name)
     return jsonify({"model_list": model_list, "status_code": 200})
+
 
 @app.route("/get_pickle", methods=['POST'])
 def get_pkl():  
@@ -49,6 +51,7 @@ def get_pkl():
         return jsonify({"pickle_file": "pickle file not found"})
     else:
         return jsonify({"pickle_file": pickle_file})
+
 
 if(__name__ == "__main__"):
     app.run(port=MODEL_PORT, debug = True)

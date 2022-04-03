@@ -1,0 +1,14 @@
+{
+    "app_name": "hello_world",
+    "app_author": "Your Name",
+    "model_list": [
+        {
+            "model_id": 1, 
+            "model_name": "model1"      
+        },
+        {
+            "model_id": 2, 
+            "model_name": "model2"
+        }
+    ]
+}

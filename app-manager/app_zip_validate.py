@@ -1,9 +1,5 @@
-from aiohttp import client
-from sqlalchemy import false
-from werkzeug.utils import secure_filename
 import json
 import os
-import sys
 import zipfile
 
 def read_json(file_name):
@@ -29,6 +25,7 @@ def unzip_file(file_name):
     '''
     with zipfile.ZipFile(file_name, 'r') as zip_ref:
         zip_ref.extractall(os.path.dirname(file_name))
+
 
 def check_appname(app_name, app_list):
     '''
@@ -102,7 +99,7 @@ def sensor_requirement(sensorConfig,sensor_list):
              
 
 
-def validate_zip(file_name, app_list, model_list, sensor_list):
+def validate_zip(file_name):
     '''
     validates zip file
     '''
@@ -114,20 +111,35 @@ def validate_zip(file_name, app_list, model_list, sensor_list):
 
     unzip_file(file_name)
     folder_name = os.path.splitext(file_name)[0]
-    app_json = read_json(folder_name + "/app.json")
-    app_name = app_json["app_name"]
-    model_temp= app_json["model_list"]
-    app_models = []
-    for model in model_temp:
-        app_models.append(model["model_name"])
+
+    try:
+        app_config_json = read_json(folder_name + "/app_config.json")
+        sensor_config_json = read_json(folder_name + "/sensor_type_config.json")
+    except FileNotFoundError as e:
+        return {
+            'status_code': 500,
+            'message': 'Missing file error'
+        }
+
+    return {
+        "app_config": app_config_json,
+        "sensor_type_config": sensor_config_json
+    }
+
+    # app_name = app_config_json["app_name"]
+    # model_temp= app_config_json["model_list"]
+    # app_models = []
+    # for model in model_temp:
+    #     app_models.append(model["model_name"])
     
-    if not check_appname(app_name, app_list):
-        return '{"status": "400", "message": "App name already present"}'
+    # if not check_appname(app_name, app_list):
+    #     return '{"status": "400", "message": "App name already present"}'
     
-    if not check_models(app_models, model_list):
-        return '{"status": "400", "message": "Invalid model list"}'
+    # if not check_models(app_models, model_list):
+    #     return '{"status": "400", "message": "Invalid model list"}'
 
 
-    return '{"status": "200", "message": "Valid zip file"}'
+    # return '{"status": "200", "message": "Valid zip file"}'
 
 
+# validate_zip("test/App.zip", [], [], [], 'my-app')
