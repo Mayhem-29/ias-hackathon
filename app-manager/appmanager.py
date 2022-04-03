@@ -78,6 +78,7 @@ constants = read_json("constants.json")
 
 #DEVELOPER VIEW
 
+<<<<<<< HEAD
 # @app.route("/get_model_list", methods=["GET"])
 # def get_model_list():
 #     '''
@@ -85,6 +86,17 @@ constants = read_json("constants.json")
 #     '''
 #     model_list = req_sess.get(ai_manager_endpoints["base_url"] + ai_manager_endpoints["uri"]["get_model_info"]).json()
 #     return model_list
+=======
+
+
+@app.route("/get_model_list", methods=["GET"])
+def get_model_list():
+    '''
+    requests AI manager for list of avalaible models with sensor requirement
+    '''
+    model_list = req_sess.get(ai_manager_endpoints["base_url"] + ai_manager_endpoints["uri"]["get_model_list"]).json()
+    return model_list
+>>>>>>> 2c0272f72f2b74914932823881c073861593b5fa
 
 
 def allowed_file(filename):
@@ -414,4 +426,8 @@ def upload_application():
 
 
 if(__name__ == "__main__"):
+<<<<<<< HEAD
     app.run(port=constants["PORT"]["APP_PORT"], debug=True)
+=======
+    app.run(port=APP_PORT, debug=True)
+>>>>>>> 2c0272f72f2b74914932823881c073861593b5fa
