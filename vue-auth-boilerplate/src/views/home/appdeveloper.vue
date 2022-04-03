@@ -27,7 +27,7 @@
         <tr v-for="(item,index) in models" :key="item.model_name">
         <td>
         <FormulateInput
-  v-model="models[index]"
+  v-model="models[index]['value']"
   type="checkbox"
 />
 </td>
@@ -60,10 +60,10 @@
         </tr>
     </thead>
     <tbody>
-        <tr v-for="item in sensors" :key="item.sensor_name">
+        <tr v-for="(item,index) in sensors" :key="item.sensor_name">
         <td>
         <FormulateInput
-  v-model="item['value']"
+  v-model="sensors[index]['value']"
   type="checkbox"
 />
 </td>
@@ -96,10 +96,10 @@
         </tr>
     </thead>
     <tbody>
-        <tr v-for="item in controllers" :key="item.controller_name">
+        <tr v-for="(item,index) in controllers" :key="item.controller_name">
         <td>
         <FormulateInput
-  v-model="item['value']"
+  v-model="controllers[index]['value']"
   type="checkbox"
 />
 </td>
@@ -117,6 +117,10 @@
         
     </tbody>
     </table>
+    <pre
+      class="code"
+      v-text="models"
+    />
   </div>
 
 </template>
