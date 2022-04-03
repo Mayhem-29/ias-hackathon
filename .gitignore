@@ -1,2 +1,4 @@
 __pycache__/
 ias-hack
+.DS_Store
+.gitignore
