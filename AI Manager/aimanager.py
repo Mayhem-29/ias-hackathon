@@ -7,6 +7,11 @@ from flask_mongoalchemy import MongoAlchemy
 import pymongo
 import os
 import pickle
+import zipfile
+from azure.storage.fileshare import ShareFileClient
+from azure.identity import DefaultAzureCredential
+import numpy as np
+import shutil
 
 app = Flask(__name__)
 
@@ -21,6 +26,13 @@ SENSOR_PORT = 9100
 MODEL_PORT = 9200
 PLATFORM_PORT = 9300
 
+def unzip_file(file_name,source_folder):
+    '''
+    unzips the file to folder of same name
+    '''
+    with zipfile.ZipFile(file_name, 'r') as zip_ref:
+        zip_ref.extractall(source_folder)
+
 
 @app.route("/model", methods=['POST'])
 def model_store():
@@ -28,14 +40,16 @@ def model_store():
     myquery = {"model_name":req["model_name"]}
     response = collection.find(myquery)
 
-    temp_dic={}
+    temp_dic=[]
     for x in response:
-        temp_dic.add(x)
+        temp_dic.append(x)
     
     if(len(temp_dic)==0):
+        temp_dic.clear()
         collection.insert_one(req)
         return "model stored"
-
+    
+    temp_dic.clear()
     return "model already exists"
 
 @app.route("/list_of_models", methods=['GET'])
@@ -51,20 +65,30 @@ def get_list():
 def get_pkl():
     req = request.get_json()
     model_nam = req.get('model_name')
+    zip_name = model_nam + ".zip"
+    service = ShareFileClient.from_connection_string(conn_str="https://hackathonfilesstorage.file.core.windows.net/DefaultEndpointsProtocol=https;AccountName=hackathonfilestorage;AccountKey=gdZHKPvMvlkDnpMcxMxu2diC/bRqvjptH7qJlbx5VI/95L/p6H932ZOTZwg5kuWbyUJ6Y8TCrh3nqIlyG+YD2g==;EndpointSuffix=core.windows.net", share_name="hackathon/Model_Package", file_path=zip_name)
+    with open(model_nam+".zip", "wb") as file_handle:
+        data = service.download_file()
+        data.readinto(file_handle)
+    os.mkdir(model_nam)
+    unzip_file(zip_name,os.getcwd()+"/"+model_nam)
+    
     list_a = collection.find()
     pickle_file = ""
     for iter in (list_a):
         if(iter["model_name"] == model_nam):
-            pickle_file = iter["pkl_url"]
+            pickle_file = os.getcwd() + "/" + model_nam + "/" + "model.pkl"
             break
     if(pickle_file == ""):
         return jsonify({"pickle_file": "pickle file not found", "status_code":500})
     else:
-        input_preprocessed = os.system('python preprocessor.py ', req.get('input'))
+        # input_preprocessed = os.system('python ' + os.getcwd() + "/" + model_nam + "/" + "preprocessing.py", req.get('input'))
         model = pickle.load(open(pickle_file, "rb"))
-        prediction = str(model.predict(input_preprocessed))
-        output = os.system('python postprocessor.py' + prediction)
-        return jsonify({"prediction" : output, "status_code" : 200})
+        prediction = str(model.predict(np.array(req["data"]).reshape(1, -1))[0])
+        shutil.rmtree(os.getcwd()+"/"+model_nam)
+        os.remove(zip_name)
+        # output = os.system('python ' + os.getcwd() + "/" + model_nam + "/" + "postprocessing.py" + prediction)
+        return jsonify({"prediction" : prediction, "status_code" : 200})
 
 
 
