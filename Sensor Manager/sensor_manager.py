@@ -2,9 +2,6 @@ from flask import Flask,render_template,request,redirect
 import random
 import json
 import random
-from flask_sqlalchemy import SQLAlchemy
-# from flask_session import Session
-from ensurepip import bootstrap
 import time
 import threading
 import pymongo
