@@ -86,7 +86,7 @@ def get_model_list():
     '''
     requests AI manager for list of avalaible models with sensor requirement
     '''
-    model_list = req_sess.get(ai_manager_endpoints["base_url"] + ai_manager_endpoints["uri"]["get_model_info"]).json()
+    model_list = req_sess.get(ai_manager_endpoints["base_url"] + ai_manager_endpoints["uri"]["get_model_list"]).json()
     return model_list
 
 
