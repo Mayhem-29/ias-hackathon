@@ -49,163 +49,16 @@ def dev():
 def enduser():
     return render_template("enduser.html")
 
-# ai_manager_endpoints = {
-#     "base_url": "http://localhost:" + str(MODEL_PORT),
-#     "uri": {
-#         "get_model_list": "/all_model_details",
-#         "model_details": "/model_details",
-#         "list_models": "/list_models"
-#     }
-
-# }
-
-# platform_endpoints = {
-#     "base_url": "http://localhost:" + str(PLATFORM_PORT),
-#     "uri": {
-#         "get_sensor_info": "/get_sensor_info",
-#         "get_model_info": "/get_model_info",
-#         "free_instance_by_type_id": "/free_instance_by_type_id",
-#         "predict_model": "/predict_model"
-#     }
-# }
-
-
-# scheduler_endpoints = {
-#     "base_url": "http://localhost:" + str(SCH_PORT),
-#     "uri": {
-#         "deploy_app": "/deploy_app"
-#     }
-# }
-
-
-# sensor_manager_endpoints = {
-#     "base_url":"http://localhost:" + str(SENSOR_PORT),
-#     "uri":{
-#         "get_sensor_info": "/newsensorinfo_ap"
-#     }
-# }
-
 
 def read_json(file_name):
     with open(file_name, "r") as f:
         return json.load(f)
 
-constants = read_json("constants.json")
-
-#DEVELOPER VIEW
-
-# @app.route("/get_model_list", methods=["GET"])
-# def get_model_list():
-#     '''
-#     requests AI manager for list of avalaible models with sensor requirement
-#     '''
-#     model_list = req_sess.get(ai_manager_endpoints["base_url"] + ai_manager_endpoints["uri"]["get_model_info"]).json()
-#     return model_list
+constants = read_json("app-manager/constants.json")
 
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in set(["zip"])
-
-
-# @app.route("/app_dev_upload", methods=["POST"])
-# def upload_file():
-#     '''
-#     uploads file to server
-#     '''
-#     if 'file' not in request.files:
-#         resp = jsonify({'message': 'No file part in the request'})
-#         resp.status_code = 400
-#         return resp
-
-#     file = request.files['file']
-
-#     if file.filename == '':
-#         resp = jsonify({'message': 'No file selected for uploading'})
-#         resp.status_code = 400
-#         return resp
-    
-#     if file and allowed_file(file.filename):
-#         filename = secure_filename(file.filename)
-#         file.save("uploadfiles/" + filename)
-#         return jsonify({'message': 'File successfully uploaded'})
-#     else:
-#         resp = jsonify({'message': 'Allowed file types are zip'})
-#         resp.status_code = 400
-#         return resp
-
-
-
-
-
-
-# '''
-# @app.route("/newsensorinfo_ap", methods=["GET"])
-# '''
-
-# @app.route("/get_sensor_list", methods=["GET"])
-# def get_sensor_list():
-#     '''
-#     request platform manager for sensor list
-#     '''
-#     sensor_info = req_sess.get(sensor_manager_endpoints["base_url"] + sensor_manager_endpoints["uri"]["get_sensor_info"]).json() #kafka
-#     return sensor_info
-
-
-
-# @app.route("/validate_enduser_config",methods=["POST"])
-# def validate_enduser_config():
-#     app_config = request.get_json()
-
-
-#     if not ejv.validate_app_json(app_config):
-#         return '{"status:500","message":"app_config is not valid"}'
-
-#     db_response = AppDB.find_one({"app_name": app_config['app_name']})
-    
-#     if db_response == None:
-#         return '{"status:500","message":"app_name is not valid"}'
-
-    
-#     location = app_config["location"]
-#     sensor_inf= get_sensor_list()
-
-#     if not ejv.UserSensorValidation(sensor_inf, db_response, location):
-#         return '{"status:500","message":"sensor_config is not valid"}'
-    
-#     return '{"status:200","message":"app_config is valid"}'
-
-# #SCHEDULER
-
-# '''
-# scheduler json
-# {
-#     "app_path" : "some_app_path",
-#     "start_time" : "some_start_time",
-#     "duration" : "some_duration_app",
-#     "standalone" : "true/false"
-# }
-# '''
-
-# #@app.route("/schedule_app", methods=["POST"])
-# def deploy_app():
-#     '''
-#     Sends app deployment info to Scheduler
-#     '''
-#     app_info = request.get_json()
-#     app_name = app_info["app_name"]
-#     app_path = app_info["app_path"]
-#     app_start_time= app_info["start_time"]
-#     app_duration= app_info["duration"]
-#     app_standalone = app_info["standalone"]
-#     app_info = {
-#         "app_path": app_path,
-#         "start_time": app_start_time,
-#         "duration": app_duration,
-#         "standalone": app_standalone
-#     }
-#     #change with kafka
-#     response = req_sess.post(scheduler_endpoints["base_url"] + scheduler_endpoints["uri"]["deploy_app"], json=app_info) 
-#     return response.text
 
 
 @app.route("/get_sensor_data", methods=["POST"])
@@ -225,14 +78,6 @@ def get_model_predict():
     req = request.get_json()
     resp = requests.post(constants["BASE_URL"] + str(constants["PORT"]["MODEL_PORT"]) + constants["ENDPOINTS"]["AI_MANAGER"]["get_prediction"], json=req).json()
     return resp
-
-
-
-
-
-
-
-
 
 
 ##################### Code Clean up ###############
