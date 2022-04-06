@@ -74,13 +74,13 @@ def data_producer(topic,data_type):
             msg = random.randint(10,10000)
             producer.send(topic,msg)
             # print("Producer : ", msg)
-            time.sleep(2.5)
+            # time.sleep(2.5)
     elif(data_type == "float"):
         while True:
             msg = int(random.random()*100)/100
             producer.send(topic,msg)
             # print("Producer : ", msg)
-            time.sleep(2.5)
+            # time.sleep(2.5)
     elif(data_type=='array'):
         while True:
             f=open("data.json")
@@ -89,7 +89,7 @@ def data_producer(topic,data_type):
             msg=data[str(i)]
             producer.send(topic,msg)
             # print("Producer : ", msg)
-            time.sleep(2.5)
+            # time.sleep(2.5)
 
 
         
