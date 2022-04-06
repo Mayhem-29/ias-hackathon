@@ -1,0 +1,72 @@
+<html>
+   <script>
+
+      function getdata(){
+         event.preventDefault()
+         var app_name = document.getElementById("app_name").value
+         var start_time = document.getElementById("start_time").value
+         var duration = document.getElementById("duration").value
+         var standalone = document.getElementById("standalone").value
+         var location = document.getElementById("location").value
+
+         send_json = {
+            "app_name" : app_name,
+            "start_time" : start_time,
+            "duration" : duration,
+            "standalone" : standalone,
+            "location" : location
+         }
+         console.log(send_json)
+         fetch (`http://localhost:9400/deploy_app` , {
+            method : "POST",
+            body : JSON.stringify(send_json),
+            headers : {
+            "Content-type": "application/json; charset=UTF-8"
+            }
+         })
+         .then(function (response){
+            return response.json()
+         })
+      }
+
+      show = (e) => {
+         fetch (`http://localhost:9400/get_app_list`)
+         .then (resp =>resp.json())
+         .then (data => {
+            list = document.getElementById('app-list')
+            list.innerText = ""
+            data.forEach(element => {
+               let li = document.createElement("li");
+               li.innerText = element["app_name"];
+               console.log(element)
+               list.appendChild(li);
+            })
+         })
+      }
+
+   </script>
+   <body>
+      <button onclick="show()">Show</button>
+      <div>
+            <h2>Apps</h2>
+            <ul id="app-list">
+
+            </ul>
+      </div>
+      <br>
+      <h2> Application Deploy Form </h2>
+      <form id="myform" onsubmit="getdata()">
+         <label for="app_name">App Name</label>
+         <input type="text" id="app_name" name="app_name"><br><br>
+         <label for="start_time">Start Time</label>
+         <input type="start_time" id="start_time" name="start_time"><br><br>
+         <label for="duration">duration</label>
+         <input type="number" step="0.01" id="duration" name="duration"><br><br>
+         <label for="standalone">Stand Alone</label>
+         <input type="number" id="standalone" name="standalone" min="0" max="1"><br><br>
+         <label for="location">location</label>
+         <input type="text" id="location" name="location"><br><br>
+         <input type = "submit"/>
+      </form>
+   </body>
+</html>

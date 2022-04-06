@@ -1,0 +1,64 @@
+<html>
+    <script>
+        show = (e) => {
+            fetch(`http://localhost:9400/get_available_resources`)
+            .then ( resp => resp.json())
+            .then(data => {
+                var list = document.getElementById('model-list')
+                list.innerText = ""
+                var model_list = data['models']["model_list"]
+                console.log(model_list)
+                model_list.forEach(element => {
+                   let li = document.createElement("li");
+                   li.innerText = element;
+                   console.log(element)
+                   list.appendChild(li);
+                });
+
+
+                var list = document.getElementById('sensor-list')
+                list.innerText = ""
+                var sensor_list = data['sensors']["response"]
+                console.log(model_list)
+                sensor_list.forEach(element => {
+                   let li = document.createElement("li");
+                   li.innerText = element;
+                   console.log(element)
+                   list.appendChild(li);
+                });
+            })
+            
+        }
+      
+     </script>
+     <body>
+        <button onclick="show()">Show resources</button>
+        <div>
+         <h2>models for dev</h2>
+           <ul id="model-list">
+
+           </ul>
+        </div>
+        <div>
+         <h2>sensors for dev</h2>
+            <ul id="sensor-list">
+
+            </ul>
+         </div>
+         <!-- <div>
+            <table>
+               <tr><th>contollers for dev</th></tr>
+               <div id="controller-list">
+   
+               </div>
+            </table>
+         </div> -->
+      <br>
+      <h2> Application Upload </h2>
+      <form action = "http://localhost:9400/upload_application" method = "POST" enctype = "multipart/form-data">
+        <label for="model.zip">Application Details</label>
+         <input type = "file" name = "file" accept=".zip,.rar,.7zip"><br><br>
+         <input type = "submit"/>
+      </form>
+   </body>
+</html>

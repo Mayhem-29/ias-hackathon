@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script>
+        function loginUser(){
+            let username = document.getElementById("username").value;
+            let password = document.getElementById("password").value;
+            let role = document.getElementById("role").value;
+            let url = 'http://localhost:9400/';
+
+            switch (role) {
+                case "data_scientist":
+                    url = 'http://localhost:9450/upload'
+                    break;
+                case "platform_admin":
+                    url = 'http://localhost:9100/'
+                    break;
+                case "app_developer":
+                    url = 'http://localhost:9400/developer'
+                    break;
+                case "user":
+                    url = 'http://localhost:9400/enduser'
+                    break;
+                default:
+                    url = 'http://localhost:9400/'
+                    break;
+            }
+
+            window.location.href = url;
+        }
+    </script>
+</head>
+<body>
+    <h2>Application Login</h2>
+    <div class="container">
+        <form>
+            <div class="form-control">
+                <label for="username">Username</label>
+                <input type="text" name="username" id="username" />
+            </div>
+            <div class="form-control">
+                <label for="password">Password</label>
+                <input type="password" name="password" id="password" />
+            </div>
+            <div class="form-control">
+                <label for="role">Role</label>
+                <select type="" name="role" id="role">
+                    <option value="data_scientist">Data Scientist</option>
+                    <option value="platform_admin">Platform Admin</option>
+                    <option value="app_developer">App Developer</option>
+                    <option value="user">User</option>
+                </select>
+            </div>
+            <div class="form-control">
+                <button type="button" onclick="javascript:loginUser()">Login</button>
+            </div>
+
+        </form>
+    </div>
+</body>
+</html>

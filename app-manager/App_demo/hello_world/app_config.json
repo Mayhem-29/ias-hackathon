@@ -1,0 +1,9 @@
+{
+    "app_name": "hello_world",
+    "app_author": "Your Name",
+    "model_list": [
+        {
+            "model_name": "digit_pred"      
+        }
+    ]
+}
