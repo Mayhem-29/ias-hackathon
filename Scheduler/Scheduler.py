@@ -114,6 +114,7 @@ def deployerApp(appInfo):
         1.2)take end time, req id, stand_alone,
             and add to the second priority queue
     2)delete entry from Scheduler_db since the app is now scheduled and deployed
+    2)update a new field in mongo doc= kill_time
     """
 
     #1
@@ -134,7 +135,8 @@ def deployerApp(appInfo):
         heapq.heappush(Termination_queue,(end_time,appInfo[2]))
     
     #2
-    mycollection.delete_one({"app_inst_id": appInfo[2]})
+    # mycollection.delete_one({"app_inst_id": appInfo[2]})
+    mycollection.update_one({"app_inst_id":appInfo[2]},{"$set":{"kill_time":end_time}})
    
 
 
@@ -161,7 +163,8 @@ def termination_function():
             deployer_obj["app_inst_id"]=appInstId
             deployer_obj["end_status"]=1
             response=sess.post(endpoint['node_manager']['base_url'] + endpoint['node_manager']['uri']['get_schedule_app'],json=deployer_obj).json()
-            print(response["message"])#application killed or not
+            mycollection.delete_one({"app_inst_id": appInstId})
+            print(response["message"]) #application killed or not
 
 if __name__=="__main__":
     """
