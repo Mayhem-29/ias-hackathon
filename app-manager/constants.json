@@ -16,7 +16,8 @@
         "AI_MANAGER": {
             "get_model_list": "/list_of_models",
             "get_prediction": "/get_prediction",
-            "data_scientist": "/dataScientist"
+            "ai_home": "/",
+            "dataScientist": "/dataScientist"
         },
         "SENSOR_MANAGER": {
             "admin": "/",

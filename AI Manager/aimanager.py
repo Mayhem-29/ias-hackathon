@@ -15,7 +15,7 @@ from flask_cors import CORS, cross_origin
 
 app = Flask(__name__)
 cors = CORS(app)
-app.config['SECRET_KEY'] = "dub_nation"
+
 
 req_sess = requests.Session()
 
@@ -173,7 +173,9 @@ def hello():
         token = request.args['jwt']
         data = jwt.decode(token, app.config['SECRET_KEY'], algorithms='HS256')
         print(data)
-        return render_template('dataScientist.html', upload_url = "")
+        return render_template('dataScientist.html',
+            upload_url = constants["BASE_URL"] + constants["PORT"]["MODEL_PORT"] + constants["ENDPOINTS"]["AI_MANAGER"]["dataScientist"]
+        )
     except Exception as e:
         print(e)
         return redirect(constants["BASE_URL"] + constants["PORT"]["APP_PORT"] + constants["ENDPOINTS"]["APP_MANAGER"]["home"])

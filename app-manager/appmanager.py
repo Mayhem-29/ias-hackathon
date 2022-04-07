@@ -54,7 +54,7 @@ def hello():
     return render_template("landing_page.html", 
         login=constants["BASE_URL"] + str(constants["PORT"]["AUTH_PORT"]) + constants["ENDPOINTS"]["AUTH_MANAGER"]["login"],
         register=constants["BASE_URL"] + str(constants["PORT"]["AUTH_PORT"]) + constants["ENDPOINTS"]["AUTH_MANAGER"]["register"],
-        data_scientist=constants["BASE_URL"] + str(constants["PORT"]["MODEL_PORT"]) + constants["ENDPOINTS"]["AI_MANAGER"]["data_scientist"],
+        data_scientist=constants["BASE_URL"] + str(constants["PORT"]["MODEL_PORT"]) + constants["ENDPOINTS"]["AI_MANAGER"]["ai_home"],
         admin=constants["BASE_URL"] + str(constants["PORT"]["SENSOR_PORT"]) + constants["ENDPOINTS"]["SENSOR_MANAGER"]["admin"],
         developer=constants["BASE_URL"] + str(constants["PORT"]["APP_PORT"]) + constants["ENDPOINTS"]["APP_MANAGER"]["developer"],
         user=constants["BASE_URL"] + str(constants["PORT"]["APP_PORT"]) + constants["ENDPOINTS"]["APP_MANAGER"]["user"],
