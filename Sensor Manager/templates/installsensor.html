@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+    <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <title>Admin | MLOps Seva</title>
+    <head>
+        <link rel="stylesheet" href="style.css">
+    </head>
+
+    <style>
+        *{
+            font-family: Arial;
+        }
+
+        body {
+            background-color: #eee;
+        }
+
+        .container {
+            padding: 10px;
+        }
+
+        .sub-container {
+            display: flex;
+            flex-direction: column;
+            padding: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .title {
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .container form {
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            flex-direction: column;
+            padding: 10px 0px;
+            flex: 1;
+        }
+
+        .form-control {
+            display: flex;
+            flex-direction: column;
+            margin: 10px 0px;
+            flex: 1;
+            width: 40%;
+        }
+
+        .form-control .label {
+            font-size: 14px;
+            font-weight: 700;
+            margin: 10px 0px;
+        }
+
+        .form-control button {
+            width: 50%;
+            cursor: pointer;
+            background-color: #045e86;
+            color: #eee;
+            border: none;
+            padding: 10px;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .app-header {
+            font-size: 25px;
+            font-weight: 700;
+            padding-bottom: 10px;
+            text-decoration: underline;
+        }
+
+        footer {
+            bottom: 0;
+            position: absolute;
+            width: 100%;
+            margin: 0px -8px 0px -8px;
+        }
+
+        .footer-left {
+            min-height: 40px;
+            background-color: #ccc;
+            padding: 10px 10px;
+        }
+    </style>
+
+    <body>
+        <div class="container">
+            <div class="app-header">MLOps Seva</div>
+            <div class="sub-container">
+                <div class="title">Add Sensor Type</div>
+                <form action = "http://localhost:9100/install_sensortype" method = "POST">
+                    <div class="form-control">
+                        <label for="Sensor_Name">sensor_type</label>
+                        <input type="text" id="Sensor_Name" name="sensor_type">
+                    </div>
+                    <div class="form-control">
+                        <label for="tof">output_type</label>
+                        <input type="text" id="tof" name="output_type">
+                    </div>
+                    <div class="form-control">
+                        <button type="submit">Submit</button>
+                    </div>
+                </form>
+            </div>
+            <hr>
+            <div class="sub-container">
+                <div class="title">Add Sensor Instance</div>
+                <form action = "http://localhost:9100/install_sensorins" method = "POST">
+                    <div class="form-control">
+                        <label for="sensor_type">sensor_type</label>
+                        <input type="text" id="sensor_type" name="sensor_type">
+                    </div>
+                    <div class="form-control">
+                        <label for="location">Location:</label>
+                        <input type="text" id="location" name="location">
+                    </div>
+                    <div class="form-control">
+                        <label for="sensor_ip">Sensor IP</label>
+                        <input type="text" id="sensor_ip" name="sensor_ip">
+                    </div>
+                    <div class="form-control">
+                        <label for="sensor_port">Port:</label>
+                        <input type="text" id="sensor_port" name="sensor_port">
+                    </div>
+                    <div class="form-control">
+                        <button type="submit">Submit</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </body>
+    <footer>
+        <div class="footer-left">
+            &copy; 2022 Internals of Application Server : Group-6
+        </div>
+    </footer>
+        
+</html>

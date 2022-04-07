@@ -57,7 +57,6 @@ def get_node_id():
     req={
         'stand_alone': bool
     }
-
     we will ignore stand_alone for now
     and do load balancing on basis of num of apps running
     """

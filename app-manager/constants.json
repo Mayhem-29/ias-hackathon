@@ -1,0 +1,44 @@
+{
+    "KAFKA_HOST_ADDR": "13.71.94.55:9092",
+
+    "BASE_URL": "http://localhost:",
+    "PORT": {
+        "SENSOR_PORT": "9100",
+        "MODEL_PORT": "9200",
+        "PLATFORM_PORT": "9300",
+        "APP_PORT": "9400",
+        "DEPLOYER_PORT": "9700",
+        "NODE_PORT": "9500",
+        "SCH_PORT": "9600"
+    },
+    "ENDPOINTS": {
+        "AI_MANAGER": {
+            "get_model_list": "/list_of_models",
+            "get_prediction": "/get_prediction"
+        },
+        "SENSOR_MANAGER": {
+            "sensor_info": "/list_of_sensortypes",
+            "getsensordata": "/getsensordata",
+            "list_sensor_info_by_loc": "/list_sensor_info_by_loc"
+        },
+        "APP_MANAGER": {
+            "get_all_models_sensos": "/get_models_sensors",
+            "get_app_list": "/get_app_list",
+            "get_sensor_by_app_id": "/get_sensor_by_app_id",
+            "deploy_app": "/deploy",
+            "get_sensor_data": "/get_sensor_data",
+
+            "get_model_predict": "/get_model_predict",
+            "get_available_resources": "/get_available_resources"
+        },
+        "PLATFORM_MANAGER": {
+            "get_sensor_info": "/get_sensor_info",
+            "get_model_info": "/get_model_info",
+            "free_instance_by_type_id": "/free_instance_by_type_id",
+            "predict_model": "/predict_model"
+        },
+        "SCHEDULER_MANAGER": {
+            "deploy_app": "/sendInfo"
+        }
+    }
+}

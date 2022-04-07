@@ -6,6 +6,7 @@ from threading import Thread
 from datetime import datetime,date,timedelta
 import math
 import heapq
+from flask_cors import CORS, cross_origin
 
 
 app = Flask(__name__)
