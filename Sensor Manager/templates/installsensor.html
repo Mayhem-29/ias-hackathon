@@ -35,12 +35,31 @@
                 <label for="ip">IP</label><br>
                 <input type="text" id="ip" name="ip"><br>
                 <label for="port">Port</label><br>
-                <input type="text" id="Port" name="port"><br>
+                <input type="text" id="Port" name="port"><br><br>
                 <input type="submit" value="Submit">
 
              </form>
         </div>
       </div> 
+
+
+
+
+      <div class="split right">
+        <div class="centered">
+            <h1> Delete Sensor instance </h1>
+
+            <form action = "/delete_sensorins" method = "POST">
+                <label for="Sensor_Name">sensor_type</label><br>
+                <input type="text" id="Sensor_Name" name="sensor_type"><br>
+                <label for="loc">location:</label><br>
+                <input type="text" id="loc" name="location"><br>
+                <br>
+                <input type="submit" value="Submit">
+
+             </form>
+        </div>
+      </div>
 
 </body>
 

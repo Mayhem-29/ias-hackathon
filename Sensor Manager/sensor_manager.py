@@ -1,46 +1,54 @@
 from flask import Flask,render_template,request,redirect
 import random
 import json
-import random
 import time
 import threading
 import pymongo
-# from topics import * 
+from init_sensor import *
+CONST=""
+with open("constants.json","r") as f:
+    CONST = json.load(f)
 
-from flask_cors import CORS
+############################################## List of APIs #######################################################
 
-# app = Flask(_name_)
-
-
-
-
-import dns
-# ***************************************** Kafka *********************************************************
-
-
-from kafka.admin import KafkaAdminClient, NewTopic
-from kafka.consumer import KafkaConsumer
-from kafka import KafkaProducer
+# @app.route("/")
+# @app.route("/is_sensor_manager_alive")
+# @app.route('/appdev_insert_type/<string:sensor_type>/<string:output_type>')
+# @app.route('/list_of_sensortypes')
+# @app.route('/install_sensorins', methods=["POST"])
+# @app.route('/delete_sensorins', methods=["POST"])
+# @app.route('/newsensorinfo')
+# @app.route('/list_sensor_info_by_loc')
+# @app.route('/newsensorinfo_ap')
 
 
+##################################################################################################################
+
+    
+
+
+# **************************************** Pymongo *******************************************************
 
 cluster = pymongo.MongoClient('mongodb+srv://hackathon:hackathon@hackathon.wgs03.mongodb.net/Hackathon?retryWrites=true&w=majority')
 db = cluster["Hackathon"]
 type_info = db["sensor_type_info"]
 ins_info = db["sensor_instance_info"]
 
-# sensor_type_info = db["type_info"]
-# sensor_instance_info = db["ins_info"]
-
-# IP_ADDR = "0.0.0.0:9092"
-IP_ADDR = "13.71.94.55:9092"
 
 
+
+
+# ***************************************** Kafka *********************************************************
+
+from kafka.admin import KafkaAdminClient, NewTopic
+from kafka.consumer import KafkaConsumer
+from kafka import KafkaProducer
+
+IP_ADDR = CONST["KAFKA_HOST_ADDR"]
 
 def serialize(msg):
         return json.dumps(msg).encode('utf-8')
 
-IP_ADDR = "13.71.94.55:9092"
 
 producer = KafkaProducer(
     bootstrap_servers = [IP_ADDR],
@@ -63,11 +71,13 @@ def create_topic(topic_name):
         print("Something went wrong")
         return False
 
-def data_producer(topic,data_type):
-    create_topic(topic)
+def data_producer(topic,data_type,fg):
+    
+    if(fg==1):
+        create_topic(topic)
     
     producer = KafkaProducer(
-        bootstrap_servers = ["13.71.94.55:9092"],
+        bootstrap_servers = [IP_ADDR],
         value_serializer = serialize
     )
     if(data_type=="int"):
@@ -93,106 +103,76 @@ def data_producer(topic,data_type):
             time.sleep(2.5)
 
 
-        
 
 
-IP_ADDR = "13.71.94.55:9092"
+admin_client = KafkaAdminClient(
+    bootstrap_servers = [IP_ADDR]
+)     
 
 
-
-
-
-
-
-##################################################################################################################
+# ********************************************** INIT Kafka  *******************************************************
 
 
 
 
-# engine=create_engine("mysql+pymysql://root:mast1320@localhost/iasdb")
-# db=scoped_session(sessionmaker(bind=engine))
+############################################################################################################
 
 
-# app=Flask(__name__)
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = "sensor_manager"
 
-CORS(app)
-
-
-def generateint():
-    return random.randint(10,10000)
-
-def generatefloat():
-    return int(random.random()*100)/100
-
-
-
 @app.route("/")
 def home():
+    '''
+    Loads Html which contains forms for Adding and Deleting Sensor Instances.
+    '''
+    
     #type_info.insert_one({"_id":0, "user_name":"Soumi"})
-    return {"Sensor_manager":"IAS"}
+    return render_template("installsensor.html")
+    # return {"Sensor_manager":"IAS"}
 
-# @app.route('/installsensor')
-# def installsensor():
-#     return render_template('installsensor.html')
-
-
-@app.route('/install_sensortype', methods=["POST"])
-def install_sensortype():
-    if request.method=="POST":
-        sensor_type=request.form.get("sensor_type")
-        # nout=request.form.get("nof")
-        output_type=request.form.get("output_type")
-        
-        
-        q1 = { "sensor_type": sensor_type }
-
-        
-        # mdl = type_info.query.get(sensor_type)
-        mdl = type_info.find(q1)
-        
-        alldata=[]
-        
-        for i in mdl:
-            alldata.append(i)
-            
-        
-        print(mdl)
-        if(len(alldata)==0):
-            #model = type_info(sensor_type=sensor_type,output_type=output_type)
-            type_info.insert_one({"sensor_type":sensor_type, "output_type":output_type})
-   
-    return redirect('/installsensor')
+@app.route("/is_sensor_manager_alive")
+def is_sensor_manager_alive():
+    '''
+    Check for sensor Alive Status
+    '''
+    
+    
+    # print(list_topics())
+    return  {"status":"yes"}
 
 
 @app.route('/appdev_insert_type/<string:sensor_type>/<string:output_type>')
 def appdev_insert_type(sensor_type,output_type):
+    '''
+    Add Sensor type by Application Manager
+    '''
+    
+    
     
     q1 = { "sensor_type": sensor_type }
 
-    
     # mdl = type_info.query.get(sensor_type)
     mdl = type_info.find(q1) 
-    
     alldata=[]
     
     for i in mdl:
         alldata.append(i)
-    
-    
-    print(mdl)
+
     if(len(alldata)==0):
         #model = type_info(sensor_type=sensor_type,output_type=output_type)
         type_info.insert_one({"sensor_type":sensor_type, "output_type":output_type})
     ans = {"response":"ok"}
-    return ans
-    
-    
+    return ans  
 
 @app.route('/list_of_sensortypes')
 def list_of_sensortypes():
+    '''
+    Lists Sensor types available on Platform
+    '''
+    
+    
     mdl=type_info.find()
     ans=[]
     for x in mdl:
@@ -201,148 +181,112 @@ def list_of_sensortypes():
     return {"response":ans}
     
 
-
-
 @app.route('/install_sensorins', methods=["POST"])
 def install_sensorins():
-    # if request.method=="POST":
-    #     sensor_type=request.form.get("sensor_type")
-    #     location=request.form.get("location")
-    #     sensor_ip = request.form.get("sensor_ip")
-    #     sensor_port = request.form.get("sensor_port")
+    '''
+    Add Sensor Instance by Platform Admin
+    '''
     
-    resp=request.get_json()
-    resp = resp['sensor_data'][0]
-    print(resp)
-    sensor_type= resp["sensor_type"]
-    location=resp["location"]
-    sensor_ip=resp["sensor_ip"]
-    sensor_port=resp["sensor_port"]
-        
-    q1={"sensor_type": sensor_type}
-    mdl=type_info.find(q1)
-    flag=0
-    for x in mdl:
-        if(x["sensor_type"]==sensor_type):
-            flag=1
-            break
-    if(flag==1):
-        ins_info.insert_one({"sensor_type": sensor_type , "location" : location, "sensor_ip" : sensor_ip, "sensor_port":sensor_port  })
-        # ins_info.insert_one(resp)
+    
+    if request.method=="POST":
+        sensor_type=request.form.get("sensor_type")
+        location=request.form.get("location")
+        sensor_ip = request.form.get("sensor_ip")
+        sensor_port = request.form.get("sensor_port")
+    
+        # resp=request.get_json()
+        # resp = resp['sensor_data'][0]
+        # print(resp)
+        # sensor_type= resp["sensor_type"]
+        # location=resp["location"]
+        # sensor_ip=resp["sensor_ip"]
+        # sensor_port=resp["sensor_port"]
+            
+        q1={"sensor_type": sensor_type}
+        mdl=type_info.find(q1)
+        flag=0
+        for x in mdl:
+            if(x["sensor_type"]==sensor_type):
+                flag=1
+                break
+        if(flag==1):
+            ins_info.insert_one({"sensor_type": sensor_type , "location" : location, "sensor_ip" : sensor_ip, "sensor_port":sensor_port  })
+            # ins_info.insert_one(resp)
 
-        all = ins_info.find()
-        alldata   = []
+            all = ins_info.find()
+            alldata   = []
 
-        for i in all:
-            alldata.append(i)
-        d_type = ""
-        q1 = {"sensor_type":sensor_type}
-        ab = type_info.find(q1)
+            for i in all:
+                alldata.append(i)
+            d_type = ""
+            q1 = {"sensor_type":sensor_type}
+            ab = type_info.find(q1)
 
-        for x in ab:
-            d_type = x["output_type"]
+            for x in ab:
+                d_type = x["output_type"]
 
-        print(d_type)
-        ins_id = str(alldata[len(alldata)-1]["_id"])
-        print(ins_id)
+            print(d_type)
+            ins_id = str(alldata[len(alldata)-1]["_id"])
+            print(ins_id)
 
-
-        t = threading.Thread(target=data_producer, args=[ins_id,d_type])
-        t.start()
+            # js = {"topic":ins_id, "output_type":d_type}
+            # post_to_producer("comm_sensor_metadata", js)
+            fg=1
+            t = threading.Thread(target=data_producer, args=[ins_id,d_type,fg])
+            t.start()
+            
              
-    return {"status":"okay"}
+    return redirect("/")
      
     # redirect('/installsensor')            
 
 
-
-@app.route('/getsensordata/<string:s_info>')
-def getsensordata(s_info):
+@app.route('/delete_sensorins', methods=["POST"])
+def delete_sensorins():
+    '''
+    Delete Sensor Instance by Platform Admin
+    '''
     
-    sensor_type,location,noi = s_info.split(',')
-    noi = int(noi)
-    q1={"sensor_type" : sensor_type , "location" : location}
-    insid = ins_info.find(q1)
-    print("aa gaya")
-    ans={}
-    q2={"sensor_type" : sensor_type}
-    data_type=type_info.find(q2)
-    
-    data_type = type_info.query.filter_by(sensor_type=sensor_type ).first()
-    print("aa gaya")
-
-    for i in range(noi):
-        if(data_type.output_type=='int'):
-            ans[i]={}
-            ans[i]["ins_id"]=insid[i].ins_id
-            ans[i]["data"]=random.randint(10,10000)
-        elif(data_type.output_type=='float'):
-            ans[i]={}
-            ans[i]["ins_id"]=insid[i].ins_id
-            ans[i]["data"]=int(random.random()*100)/100
-    print(ans)
-
-    return ans
-
-
-
-
-@app.route('/get_sensor_info')
-def get_sensor_info():
-
-    all = ins_info.find()
-    alldata   = []
-    
-    for i in all:
-        alldata.append(i)
-    
-    #print(alldata[0]["location"])
-    stloc = set()
-    stsen = set()
-    # for i in range(len(alldata)):
-    #     stloc.add(alldata[i]["location"])
-    #     stsen.add(alldata[i]["sensor_type"])
-    for x in alldata:
-        stloc.add(x["location"])
-        stsen.add(x["sensor_type"])
-        print(x["_id"])
-        print(str(x["_id"]))
-
-    stloc = list(stloc)
-    stsen = list(stsen)
-    ans = {}
-    for loc in stloc:
-        ans[loc]={}
-        for s_type in stsen:
-            ans[loc][s_type]=[]
-
-    # for i in range(len(alldata)):
-    #     ans[alldata[i]["location"]][alldata[i]["sensor_type"]].append(alldata[i]["ins_id"])
-
-
-    for x in alldata:
-        print(x)
-        ans[x["location"]][x["sensor_type"]].append(str(x["_id"]))
-        print(type(str(x["_id"])))
-
-    return ans
-
+    if request.method=="POST":
+        sensor_type=request.form.get("sensor_type")
+        location=request.form.get("location")
+        
+        ins_info.delete_one({"sensor_type":sensor_type,"location":location})
+    return redirect("/")
+            
 
 @app.route('/newsensorinfo')
 def newsensorinfo():
-
+    '''
+    {
+        "response":[
+                        {
+                            "location":"hyd",
+                            "sensors": [
+                                            {
+                                                "instances":["1234","2468"],
+                                                "sensor_type":"temp"   
+                                            },
+                                            {
+                                                "instances":["4321","6812","6789","1574"],
+                                                "sensor_type":"camera"
+                                            }
+                                        ]
+                        }
+                    ]
+    }
+    '''
+    
+    
     all = ins_info.find()
     alldata   = []
 
     for i in all:
         alldata.append(i)
 
-    #print(alldata[0]["location"])
     stloc = set()
     stsen = set()
-    # for i in range(len(alldata)):
-    #     stloc.add(alldata[i]["location"])
-    #     stsen.add(alldata[i]["sensor_type"])
+
     for x in alldata:
         stloc.add(x["location"])
         stsen.add(x["sensor_type"])
@@ -351,8 +295,7 @@ def newsensorinfo():
     stsen = list(stsen)
     ans = {}
     loc_info=[]
-    # print(alldata)
-    # print(stloc)
+
     for loc in stloc:
         diction=dict()
         diction["location"]=loc
@@ -393,6 +336,23 @@ def newsensorinfo():
 
 @app.route('/list_sensor_info_by_loc')
 def list_sensor_info_by_loc():
+    '''
+    {
+        "resp": [
+            {
+                "location": "bakul",
+                "sensor_ins": [ "1234", "1246" ],
+                "sensor_type": "heat"
+            },
+            {
+                "location": "OBH",
+                "sensor_ins": [ "3212", "2246" ],
+                "sensor_type": "camera"
+            }
+        ]
+    }
+    '''
+
 
     all = ins_info.find()
     alldata   = []
@@ -445,7 +405,6 @@ def list_sensor_info_by_loc():
             if flag==0:
                 x["sensors"].append({"sensor_type": y ,"instance" : []})
 
-
     print(loc_info)
     final=[]
     for i in range(len(loc_info)):
@@ -460,34 +419,48 @@ def list_sensor_info_by_loc():
             
             final.append(kans)
 
-    
     return {"resp":final}
 
 @app.route('/newsensorinfo_ap')
 def newsensorinfo_ap():
 
+    '''
+    {
+        "response":"success",
+        "sensor_list": [
+            {
+                "sensor_location": "obh",
+                "sensor_type": "camera",
+                "sensor_output_type": "array",
+                "sensor_instances":2
+            },
+            {
+                "sensor_location": "bakul",
+                "sensor_type": "heat",
+                "sensor_output_type": "int",
+                "sensor_instances":4
+            }
+        ]
+    }
+    '''
+    
+    
+    
     all = ins_info.find()
     alldata   = []
-
     types=type_info.find()
     
     type_to_output=dict()
     for x in types:
         if x["output_type"] not in type_to_output:
             type_to_output[x["sensor_type"]]=x["output_type"]
-            
-
-    print(type_to_output)
 
     for i in all:
         alldata.append(i)
-    
-    #print(alldata[0]["location"])
+
     stloc = set()
     stsen = set()
-    # for i in range(len(alldata)):
-    #     stloc.add(alldata[i]["location"])
-    #     stsen.add(alldata[i]["sensor_type"])
+    
     for x in alldata:
         stloc.add(x["location"])
         stsen.add(x["sensor_type"])
@@ -496,8 +469,7 @@ def newsensorinfo_ap():
     stsen = list(stsen)
     ans = {}
     loc_info=[]
-    # print(alldata)
-    # print(stloc)
+
     for loc in stloc:
         diction=dict()
         diction["location"]=loc
@@ -543,6 +515,8 @@ def newsensorinfo_ap():
 
 
 if(__name__ == "__main__"):
-    #db.create_all()
-    app.run(host="0.0.0.0",port="9100", debug = True)
+    
+    init_sen()    # Initialize Old Sensors
+    
+    app.run(host="0.0.0.0",port=CONST["PORT"]["SENSOR_PORT"], debug = True)
     
