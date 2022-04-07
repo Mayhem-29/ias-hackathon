@@ -97,14 +97,14 @@ def data_producer(topic,data_type,fg):
             msg = random.randint(10,10000)
             producer.send(topic,msg)
             # print("Producer : ", msg)
-            time.sleep(1)
+            # time.sleep(1)
 
     elif(data_type == "float"):
         while True:
             msg = int(random.random()*100)/100
             producer.send(topic,msg)
             # print("Producer : ", msg)
-            time.sleep(1)
+            # time.sleep(1)
 
     elif(data_type=='array'):
         while True:
@@ -114,7 +114,7 @@ def data_producer(topic,data_type,fg):
             msg=data[str(i)]
             producer.send(topic,msg)
             # print("Producer : ", msg)
-            time.sleep(1)
+            # time.sleep(1)
 
 
 
@@ -554,6 +554,6 @@ if(__name__ == "__main__"):
     
     init_sen()    # Initialize Old Sensors
     
-    app.run(host="0.0.0.0",port=constants["PORT"]["SENSOR_PORT"], debug = True)
+    app.run(port=constants["PORT"]["SENSOR_PORT"], debug = True)
     
 

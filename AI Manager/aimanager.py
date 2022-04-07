@@ -29,6 +29,7 @@ client = pymongo.MongoClient(conn_str)
 db = client["Hackathon"]
 collection = db["ModelDB"]
 
+app.config['SECRET_KEY'] = "dub_nation"
 
 SENSOR_PORT = 9100
 MODEL_PORT = 9200
@@ -172,7 +173,7 @@ def hello():
         print(request.args['jwt'])
         token = request.args['jwt']
         data = jwt.decode(token, app.config['SECRET_KEY'], algorithms='HS256')
-        print(data)
+        # print(data)
         return render_template('dataScientist.html',
             upload_url = constants["BASE_URL"] + constants["PORT"]["MODEL_PORT"] + constants["ENDPOINTS"]["AI_MANAGER"]["dataScientist"]
         )
@@ -206,7 +207,7 @@ def upload():
       shutil.rmtree(source_folder)
       os.remove(f.filename)
       model_store(data)
-      return redirect ('/')   
+      return redirect (constants["BASE_URL"] + str(constants["PORT"]["APP_PORT"]) + constants["ENDPOINTS"]["APP_MANAGER"]["home"])   
 
 if(__name__ == "__main__"):
     app.run(port=MODEL_PORT, debug=True)

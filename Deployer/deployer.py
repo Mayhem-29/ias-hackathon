@@ -17,6 +17,7 @@ from subprocess import Popen
 from bson import ObjectId
 import time
 import threading
+import generate_docker_file as gdf
 
 
 
@@ -123,10 +124,12 @@ def send_to_deployer():
         #         if conns.laddr.port == kill_port:
         #             proc.send_signal(SIGTERM)
         print("kill_time")
-        os.system("kill $(lsof -t -i:" + kill_port + ")")
-        # os.system("fuser -k " + str(kill_port) + "/tcp")
+        os.system(f"sudo docker exec -it $(sudo docker ps -q --filter ancestor={app_inst_id}) kill 1")
+        os.system(f"sudo docker image remove -f {app_inst_id})")
         ports[kill_port] = "False"
-        port_dict[app_inst_id] = None
+        # port_dict[app_inst_id] = None
+        del port_dict[app_inst_id]
+
         status = {
             "status":"true",
             "message":"Process Killed!"
@@ -165,15 +168,11 @@ def send_to_deployer():
         # port_dict[app_inst_id].append(key)
         # print("app path: " , app_path)
 
+        gdf.generate_dockerfile(curr_port, app_path)
 
+        os.system(f"sudo docker build -t {app_inst_id}:latest {app_path}")
+        os.system(f"sudo docker run --net=host -it -d -p {curr_port}:{curr_port} {app_inst_id}")
 
-        # command = "gnome-terminal -- bash -c 'python "+ app_path + " 9551; sleep 20'"
-        # command = "gnome-terminal " + app_path + " " + str(9551)
-        command = "gnome-terminal -- python3 "+ app_path + "/run.py "+str(curr_port)
-        # command = "python3 "+ app_path + "/run.py "+str(curr_port)
-        os.system(command)
-        # time.sleep(3.0)
-        # threading.Thread(target=os.system(command)).start()
         print("app running at port {}".format(curr_port))
         
         # port_dict[app_inst_id].append(p.pid)

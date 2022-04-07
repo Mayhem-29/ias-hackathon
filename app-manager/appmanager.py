@@ -358,7 +358,7 @@ def upload_application():
     else:
         resp = {"status_code":400, 'message': 'Allowed file types are zip'}
     os.remove(file.filename)
-    return resp
+    return redirect (constants["BASE_URL"] + str(constants["PORT"]["APP_PORT"]) + constants["ENDPOINTS"]["APP_MANAGER"]["home"])
 
 
 if(__name__ == "__main__"):

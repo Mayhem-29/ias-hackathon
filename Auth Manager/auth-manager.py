@@ -63,9 +63,9 @@ def login():
                 {'username': user_from_db['username'], 'role': user_from_db['role']}, 
                 app.config['SECRET_KEY'], 
                 algorithm='HS256'
-            )
+            ).decode("utf-8")
             print(access_token)
-            resp = make_response({'access_token': access_token, 'status_code': 200})
+            resp = jsonify({'access_token': access_token, 'status_code': 200}), 200
             return resp
         else:
             return jsonify({'message': 'Please check your username or password', 'status_code': 401}), 401
