@@ -185,7 +185,7 @@ def upload():
       shutil.rmtree(source_folder)
       os.remove(f.filename)
       model_store(data)
-      return  
+      return redirect ('/upload')   
 
 if(__name__ == "__main__"):
     app.run(port=MODEL_PORT, debug=True)
