@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, redirect
 from flask import render_template
 from flask import request
 from werkzeug.utils import secure_filename
@@ -11,6 +11,9 @@ from azure.storage.fileshare import ShareFileClient
 from azure.storage.fileshare import ShareDirectoryClient
 import os
 from azure.identity import DefaultAzureCredential
+from flask_cors import CORS, cross_origin
+
+
 
 req_sess = requests.Session()
 
@@ -19,6 +22,7 @@ x = 1
 UPLOAD_FOLDER = os.getcwd()
 
 app = Flask(__name__)
+cors = CORS(app)
 
 DATA_SCIENTIST_PORT = 9450
 SENSOR_PORT = 9100
@@ -87,9 +91,16 @@ def savefilestoazure(zip_file,model_name):
     with open(zip_file, "rb") as source_file:
       service.upload_file(source_file)
 
+
+
+@app.route("/")
+@cross_origin()
+def hello():
+    return ""
+
 @app.route('/upload')
 def upload_file():
-   return render_template('upload.html')
+   return render_template('dataScientist.html')
 
 @app.route('/dataScientist', methods = ['GET', 'POST'])
 def upload():
@@ -115,7 +126,8 @@ def upload():
       shutil.rmtree(source_folder)
       os.remove(f.filename)
       model_store(data)
-      return "File Uploaded"
+      print("File Uploaded")
+      return redirect ('/upload')
 
 if __name__ == '__main__':
     app.run(port=DATA_SCIENTIST_PORT, debug=True)

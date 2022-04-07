@@ -1,3 +1,5 @@
+from asyncio import subprocess
+from concurrent.futures import thread
 from flask import Flask, request
 import requests
 import os
@@ -5,141 +7,186 @@ import json
 from queue import PriorityQueue
 from threading import Thread
 from datetime import datetime
+from azure.storage.fileshare import ShareFileClient
+from paramiko import SSHClient, AutoAddPolicy
+import pymongo
+from psutil import process_iter
+from signal import SIGTERM
+from flask_cors import CORS, cross_origin
+from subprocess import Popen
+from bson import ObjectId
+import time
+import threading
+import generate_docker_file as gdf
+
+
 
 session = requests.Session()
 app = Flask(__name__)
+cors = CORS(app)
 
 SENSOR_PORT = 9100
 MODEL_PORT = 9200
 PLATFORM_PORT = 9300
 APP_PORT = 9400
-DEPLOYER_PORT = 9500
-NODE_PORT = 9500
+DEPLOYER_PORT = 9900
+NODE_PORT = 9700
 SCH_PORT = 9600
+CONNECTION_STR = "https://hackathonfilestorage.file.core.windows.net/DefaultEndpointsProtocol=https;AccountName=hackathonfilestorage;AccountKey=gdZHKPvMvlkDnpMcxMxu2diC/bRqvjptH7qJlbx5VI/95L/p6H932ZOTZwg5kuWbyUJ6Y8TCrh3nqIlyG+YD2g==;EndpointSuffix=core.windows.net"
 
-endpoint = {
-    "sensor_manager": {
-        "base_url": "http://localhost:"+str(SENSOR_PORT), 
-        "uri": {
-            "sensorinfo": "/sensorinfo",
-            "getsensordata": "/getsensordata"
-        }
-    },
-    "app_manager": {
-        "base_url": "http://localhost:" + str(APP_PORT),
-        "uri": {
-            "get_all_models_sensos": "/get_models_sensors",
-            "get_all_apps": "/get_all_applications",
-            "get_sensor_by_app_id": "/get_sensor_by_app_id",
-            "deploy_app": "/deploy"
-        }
-    },
-    "platform_manager": {
-        "base_url": "http://localhost:" + str(PLATFORM_PORT),
-        "uri": {
-            "get_sensor_info": "/get_sensor_info",
-            "get_model_info": "/get_model_info",
-            "free_instance_by_type_id": "/free_instance_by_type_id",
-            "predict_model": "/predict_model",
-            "update_sensor_instance": "/update_sensor_instance"
-        }
-    },
-    "node_manager": {
-        "base_url": "http://localhost:" + str(NODE_PORT),
-        "uri": {
-            "send_to_node_manager": "/send_to_node_manager",
-        }
-    },
+session = requests.Session()
+app = Flask(__name__)
+client = SSHClient()
+myclient=pymongo.MongoClient("mongodb+srv://hackathon:hackathon@hackathon.wgs03.mongodb.net/Hackathon?retryWrites=true&w=majority")
+mydb=myclient["Hackathon"]
+nodedb=mydb["Node_db"]
+# appdb = mydb["app_inst_db"]
+appdb = mydb["AppInstance"]
+
+base_url = "http://localhost:8080"
+
+# ports = 9751
+port_dict = dict()
+ports = {
+    2000 : "False",
+    2001 : "False",
+    2002 : "False",
+    2003 : "False",
+    2004 : "False",
+    2005 : "False"
 }
 
+@app.route("/")
+@cross_origin()
+def hello():
+    return ""
 
-@app.route("/get_schedule_app", methods=["POST"])
-def get_schedule_app():
+@app.route("/send_to_deployer", methods=["POST"])
+def send_to_deployer():
+    print("Starting Deployment")
     req = request.get_json()
-
-    sensors_type_id = []
-    sensor_instance_list = dict()
-    for i in req['sensors']:
-        sensors_type_id.append(i['sensor_type_id'])
-        sensor_instance_list[i['sensor_type_id']] = list()
-
-    payload = {
-        "app_id": req['app_id'],
-    }
-
-    free_sensor_instances = session.post(endpoint['app_manager']['base_url'] + endpoint['app_manager']['uri']['get_sensor_by_app_id'], json = payload)
     
-    for i in free_sensor_instances:
-        if i['sensor_location'] == req['location']:
-            sensor_instance_list[i['sensor_type_id']].append(i['sensor_instance_id'])
-    
-    for i in req['sensors']:
-        if(len(sensor_instance_list[i['sensor_type_id']]) < i['n_sensor_instance']):
-            status = {"status" : "false"}
-            return status
-    
-    used_sensors = list()
+    node_id = req["node_id"]
+    app_inst_id = req["app_inst_id"]
+    app_path = ""
+    print("app instance : ", app_inst_id)
 
-    for i in req['sensors']:
-        for j in range(i['n_sensor_instance']):
-            used_sensors.append(sensor_instance_list[i['sensor_type_id']][j])
-            # function to mark the sensor_instance_list[i['sensor_type_id']][j] as allocated
+    """
+    1) if node_id==""
+        this means that the app is already running and it has to be killed
+        1.1)goto appInsDB and fetch node_id
+        1.2)delete that row from appInst db
+        1.3)corresponding to the node_id, get the pid from dict and kill the process
+        1.4)delete the appInstId from NodeDb list of inst of that node
 
-            payload = {
-                "sensor_type_id": i['sensor_type_id'],
-                "sensor_instance_id": sensor_instance_list[i['sensor_type_id']][j]
+    2) otherwise run the app at the given node
+
+    """
+
+    #1
+    if node_id == "":
+        if port_dict[app_inst_id] == None:
+            print("port dictionary empty!")
+            status = {
+                "status":"true",
+                "message":"Port Dictionary empty for given app instance id!"
             }
+            return status
 
-            resp = session.post(endpoint["platform_manager"]["base_url"] + endpoint["platform_manager"]["uri"]["update_sensor_instance"])
-            resp = resp.content.encoding("ascii")
+        kill_port = port_dict[app_inst_id]
+        # pid = port_dict[app_inst_id][1]
+        
+
+        for x in appdb.find():
+            if str(x["_id"]) == app_inst_id:
+                node_id = x["node_id"]
+                print(x)
+                print(x["node_id"])
+                appdb.delete_one(x)
+                print("deletion done in appdb")
+                break
+        
+        temp = nodedb.update_one({ "_id": ObjectId(node_id) },
+                            { "$pull": { 'list_of_app_inst': app_inst_id } }
+                        )
+                
+
+        # kill_port = port_dict[app_inst_id][0]
+        # pid = port_dict[app_inst_id][1]
 
 
+        # cmd = "taskkill /im" + str(pid)
+        # cmd = "sudo pkill -9 -P" + str(pid)
+        # os.system(cmd)
+        # kill_port = port_dict[app_inst_id]
+        # for proc in process_iter():
+        #     for conns in proc.connections(kind='inet'):
+        #         if conns.laddr.port == kill_port:
+        #             proc.send_signal(SIGTERM)
+        print("kill_time")
+        os.system(f"sudo docker exec -it $(sudo docker ps -q --filter ancestor={app_inst_id}) kill 1")
+        # os.system(f"sudo docker stop $(docker ps -q --filter ancestor={app_inst_id})")
+        ports[kill_port] = "False"
+        port_dict[app_inst_id] = None
+        status = {
+            "status":"true",
+            "message":"Process Killed!"
+        }
+        
+    else:
+        curr_port = None
+        for curr_port in ports.keys():
+            if ports[curr_port] == "False":
+                key = curr_port
+                break
+        if key == None:
+            return {"status" : "false", "message" : "No Port Available"}
+        
+        port_dict[app_inst_id] = key
+        print("app path: " , app_path)
 
-    node_mgr = {
-        "app_id" : req["app_id"],
-        "app_path" : req["app_path"],
-        "model" : req["model"],
-        "location" : req["location"],
-        "sensor_instance_list" : used_sensors,
-        "end_time" : req["end_time"],
-        "sensor_type_id" : sensors_type_id
-    }
+        temp = nodedb.update_one({ "_id": ObjectId(node_id) },
+                    { "$push": { 'list_of_app_inst': app_inst_id}}
+                    )
+        
+        for x in appdb.find():
+            if str(x["_id"]) == app_inst_id:
+                appdb.update_one({"_id" : ObjectId(app_inst_id)}, {"$set" : {"node_id" : node_id}})
+                app_path = x["docker_image"]
+                break
+        
+        # k = None
+        # for k in ports.keys():
+        #     if ports[k] == "False":
+        #         key = k
+        #         break
+        # if key == None:
+        #     return {"status" : "false", "message" : "No Port Available"}
+        # port_dict[app_inst_id] = []
+        # port_dict[app_inst_id].append(key)
+        # print("app path: " , app_path)
 
-    status = session.post(endpoint['node_manager']['base_url'] + endpoint['node_manager']['uri']['send_to_node_manager'], json=node_mgr).json()
-    # status = {"status" : "true"}.json()
-    return status
+        gdf.generate_dockerfile(curr_port, app_path)
 
+        os.system(f"sudo docker build -t {app_inst_id}:latest {app_path}")
+        os.system(f"sudo docker run --net=host -it -d -p {curr_port}:{curr_port} {app_inst_id}")
 
-@app.route("/send_to_node_manager", methods=["POST"])
-def send_to_node_manager():
-    req = request.get_json()
+        print("app running at port {}".format(curr_port))
+        
+        # port_dict[app_inst_id].append(p.pid)
+        # port_dict[app_inst_id].append(55402)
+        # os.system(command)
+        # ports = ports + 1
+        
+        ports[curr_port] = "True"
+        status = {
+            "status":"true",
+            "message":"Deployed!"
+        }
+        print(curr_port)
 
-    # code to add the app instance info to the database
-
-    sensor_dict = dict()
-
-    for i in req["sensor_type_id"]:
-        sensor_dict["sensor_type_id"].append(i)
-
-    sensor_dict["location"] = req["location"]
-
-    model_dict = {
-        "model_name" : req["model"]
-    }
-
-    json_string = json.dumps(sensor_dict)
-    with open('sensor_dict.json', 'w') as outfile:
-        json.dump(json_string, outfile)
-
-    json_string = json.dumps(model_dict)
-    with open('model_dict.json', 'w') as outfile:
-        json.dump(json_string, outfile)
-
-    run_command = "python " + req["app_path"] + " sensor_dict.json model_dict.json" 
-    os.system("start cmd /k " + run_command)
-    status = {"status" : "true"}
-
+    print (port_dict)
     return status
 
 if __name__=="__main__":
-    app.run(port=DEPLOYER_PORT, debug=True)
+    app.run(port=DEPLOYER_PORT, debug=True) 

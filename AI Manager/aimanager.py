@@ -86,6 +86,8 @@ def get_pkl():
         unzip_file(zip_name,os.getcwd()+"/"+model_nam)
         os.remove(zip_name)
 
+
+    
     list_a = collection.find()
     pickle_file = ""
     for iter in (list_a):
