@@ -1,6 +1,7 @@
 from flask import Flask,render_template,request,redirect
 import random
 import json
+
 import time
 import threading
 import pymongo
@@ -33,6 +34,7 @@ cluster = pymongo.MongoClient('mongodb+srv://hackathon:hackathon@hackathon.wgs03
 db = cluster["Hackathon"]
 type_info = db["sensor_type_info"]
 ins_info = db["sensor_instance_info"]
+
 
 
 
@@ -78,6 +80,7 @@ def data_producer(topic,data_type,fg):
     
     producer = KafkaProducer(
         bootstrap_servers = [IP_ADDR],
+
         value_serializer = serialize
     )
     if(data_type=="int"):
@@ -85,13 +88,15 @@ def data_producer(topic,data_type,fg):
             msg = random.randint(10,10000)
             producer.send(topic,msg)
             # print("Producer : ", msg)
-            time.sleep(2.5)
+            time.sleep(1)
+
     elif(data_type == "float"):
         while True:
             msg = int(random.random()*100)/100
             producer.send(topic,msg)
             # print("Producer : ", msg)
-            time.sleep(2.5)
+            time.sleep(1)
+
     elif(data_type=='array'):
         while True:
             f=open("data.json")
@@ -100,8 +105,7 @@ def data_producer(topic,data_type,fg):
             msg=data[str(i)]
             producer.send(topic,msg)
             # print("Producer : ", msg)
-            time.sleep(2.5)
-
+            time.sleep(1)
 
 
 
@@ -115,14 +119,17 @@ admin_client = KafkaAdminClient(
 
 
 
-############################################################################################################
 
+
+############################################################################################################
 
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = "sensor_manager"
 
+
 @app.route("/")
+@cross_origin()
 def home():
     '''
     Loads Html which contains forms for Adding and Deleting Sensor Instances.
@@ -143,6 +150,7 @@ def is_sensor_manager_alive():
     return  {"status":"yes"}
 
 
+
 @app.route('/appdev_insert_type/<string:sensor_type>/<string:output_type>')
 def appdev_insert_type(sensor_type,output_type):
     '''
@@ -155,10 +163,12 @@ def appdev_insert_type(sensor_type,output_type):
 
     # mdl = type_info.query.get(sensor_type)
     mdl = type_info.find(q1) 
+
     alldata=[]
     
     for i in mdl:
         alldata.append(i)
+
 
     if(len(alldata)==0):
         #model = type_info(sensor_type=sensor_type,output_type=output_type)
@@ -173,6 +183,7 @@ def list_of_sensortypes():
     '''
     
     
+
     mdl=type_info.find()
     ans=[]
     for x in mdl:
@@ -186,9 +197,9 @@ def install_sensorins():
     '''
     Add Sensor Instance by Platform Admin
     '''
-    
-    
+ 
     if request.method=="POST":
+
         sensor_type=request.form.get("sensor_type")
         location=request.form.get("location")
         sensor_ip = request.form.get("sensor_ip")
@@ -241,6 +252,7 @@ def install_sensorins():
     # redirect('/installsensor')            
 
 
+
 @app.route('/delete_sensorins', methods=["POST"])
 def delete_sensorins():
     '''
@@ -276,16 +288,17 @@ def newsensorinfo():
                     ]
     }
     '''
-    
-    
+
     all = ins_info.find()
     alldata   = []
 
     for i in all:
         alldata.append(i)
 
+
     stloc = set()
     stsen = set()
+
 
     for x in alldata:
         stloc.add(x["location"])
@@ -352,6 +365,7 @@ def list_sensor_info_by_loc():
         ]
     }
     '''
+
 
 
     all = ins_info.find()
@@ -424,6 +438,7 @@ def list_sensor_info_by_loc():
 @app.route('/newsensorinfo_ap')
 def newsensorinfo_ap():
 
+
     '''
     {
         "response":"success",
@@ -448,6 +463,7 @@ def newsensorinfo_ap():
     
     all = ins_info.find()
     alldata   = []
+
     types=type_info.find()
     
     type_to_output=dict()
@@ -455,12 +471,14 @@ def newsensorinfo_ap():
         if x["output_type"] not in type_to_output:
             type_to_output[x["sensor_type"]]=x["output_type"]
 
+
     for i in all:
         alldata.append(i)
 
     stloc = set()
     stsen = set()
     
+
     for x in alldata:
         stloc.add(x["location"])
         stsen.add(x["sensor_type"])
@@ -520,3 +538,4 @@ if(__name__ == "__main__"):
     
     app.run(host="0.0.0.0",port=CONST["PORT"]["SENSOR_PORT"], debug = True)
     
+

@@ -1,3 +1,4 @@
+from cgitb import enable
 import json
 from kafka.admin import KafkaAdminClient, NewTopic
 from kafka import KafkaProducer, KafkaConsumer
@@ -38,7 +39,6 @@ def delete_topic(topic_name):
 def list_topics():
     try:
         consumer = KafkaConsumer(
-            topics=topic,
             bootstrap_servers = [KAFKA_SERVER_ADDR],
             auto_offset_reset = 'earliest'
         )
@@ -54,18 +54,24 @@ def list_topics():
 
 def read_from_topic(topic):
     try:
+        # print(topic)
         consumer = KafkaConsumer(
-            topics=topic,
+            topic,
             bootstrap_servers = [KAFKA_SERVER_ADDR],
-            auto_offset_reset = 'earliest'
+            enable_auto_commit = True,
+            consumer_timeout_ms = 2000
         )
-
+        print("consumer made")
         msg_list = list()
         for msg in consumer:
-            print(json.loads(msg.value))
+            print(msg)
             msg_list.append(json.loads(msg.value))
-        
+            break
+        print("message consumed")
+        print(msg_list)
+        consumer.close()
         return msg_list
+
     except Exception as e:
         print("============Something went wrong=============", e)
         return []
@@ -84,3 +90,6 @@ def post_to_producer(topic_name, msg):
         print("============Something went wrong=============", e)
         return False
 
+if __name__ == "__main__":
+    list_topics()
+    # delete_topic("624cecf2df6c30ec42f9f9d0")
