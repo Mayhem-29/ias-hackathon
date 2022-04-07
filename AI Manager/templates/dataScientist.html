@@ -7,6 +7,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <title>AI Platform | MLOps Seva</title>
 </head>
+<script>
+  function getFileData(myFile){
+    var file = myFile.files[0];  
+    var filename = file.name;
+    document.getElementById("file_name").innerHTML = "Uploaded: " + filename;
+  }
+</script>
 <style>
   * {
     font-family: Arial;
@@ -119,7 +126,7 @@
     <div class="app-header">MLOps Seva</div>
     <div class="sub-container">
       <div class="title">Application Upload Form</div>
-      <form id="file-upload" action="http://localhost:9450/dataScientist" method="POST" enctype="multipart/form-data">
+      <form id="file-upload" action="http://localhost:9200/dataScientist" method="POST" enctype="multipart/form-data">
         <div class="form-control">
           <div class="label">AI Model Details</div>
           <label class="upload-button" for="myfile">Upload zip file</label>
