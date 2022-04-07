@@ -82,13 +82,5 @@ def post_to_producer(topic_name, msg):
         return True
     except Exception as e:
         print("============Something went wrong=============", e)
-
         return False
-
-        return False
-
-if __name__ == "__main__":
-    # list_topics()
-    # delete_topic("624dceb1101ea2baa67c3946")
-    list_topics()
 
