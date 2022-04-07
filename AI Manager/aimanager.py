@@ -1,21 +1,38 @@
 from re import X
+<<<<<<< Updated upstream
 from flask import Flask
 from flask import session
 from flask import jsonify
 from flask import request
 from flask_mongoalchemy import MongoAlchemy
+=======
+from flask import Flask, jsonify, redirect, request, render_template
+from werkzeug.utils import secure_filename
+>>>>>>> Stashed changes
 import pymongo
+import json
 import os
+import requests
 import pickle
 import zipfile
 from azure.storage.fileshare import ShareFileClient
-from azure.identity import DefaultAzureCredential
 import numpy as np
 import shutil
+<<<<<<< Updated upstream
+=======
+from flask_cors import CORS, cross_origin
+
+app = Flask(__name__)
+cors = CORS(app)
+
+req_sess = requests.Session()
+>>>>>>> Stashed changes
 
 app = Flask(__name__)
 
 conn_str = 'mongodb+srv://hackathon:hackathon@hackathon.wgs03.mongodb.net/Hackathon?retryWrites=true&w=majority'
+
+UPLOAD_FOLDER = os.getcwd()
 
 client = pymongo.MongoClient(conn_str)
 db = client["Hackathon"]
@@ -35,7 +52,7 @@ def unzip_file(file_name,source_folder):
 
 
 @app.route("/model", methods=['POST'])
-def model_store():
+def model_store_in_database():
     req = request.get_json()
     myquery = {"model_name":req["model_name"]}
     response = collection.find(myquery)
@@ -65,6 +82,7 @@ def get_list():
 def get_pkl():
     req = request.get_json()
     model_nam = req.get('model_name')
+<<<<<<< Updated upstream
     zip_name = model_nam + ".zip"
     service = ShareFileClient.from_connection_string(conn_str="https://hackathonfilesstorage.file.core.windows.net/DefaultEndpointsProtocol=https;AccountName=hackathonfilestorage;AccountKey=gdZHKPvMvlkDnpMcxMxu2diC/bRqvjptH7qJlbx5VI/95L/p6H932ZOTZwg5kuWbyUJ6Y8TCrh3nqIlyG+YD2g==;EndpointSuffix=core.windows.net", share_name="hackathon/Model_Package", file_path=zip_name)
     with open(model_nam+".zip", "wb") as file_handle:
@@ -73,6 +91,18 @@ def get_pkl():
     os.mkdir(model_nam)
     unzip_file(zip_name,os.getcwd()+"/"+model_nam)
     
+=======
+    if not os.path.exists(model_nam):
+        zip_name = model_nam + ".zip"
+        service = ShareFileClient.from_connection_string(conn_str="https://hackathonfilesstorage.file.core.windows.net/DefaultEndpointsProtocol=https;AccountName=hackathonfilestorage;AccountKey=gdZHKPvMvlkDnpMcxMxu2diC/bRqvjptH7qJlbx5VI/95L/p6H932ZOTZwg5kuWbyUJ6Y8TCrh3nqIlyG+YD2g==;EndpointSuffix=core.windows.net", share_name="hackathon/Model_Package", file_path=zip_name)
+        with open(model_nam+".zip", "wb") as file_handle:
+            data = service.download_file()
+            data.readinto(file_handle)
+            os.mkdir(model_nam)
+        unzip_file(zip_name,os.getcwd()+"/"+model_nam)
+        os.remove(zip_name)
+
+>>>>>>> Stashed changes
     list_a = collection.find()
     pickle_file = ""
     for iter in (list_a):
@@ -117,6 +147,65 @@ def all_model_details():
     for iter in list_a:
         model_info[iter["model_name"]] = {"no_of_inputs":iter["no_of_inputs"], "input_data":iter["input_data"], "input_format":iter["input_format"], "output_format":iter["output_format"], "model_description":iter["model_description"]}
     return jsonify({"model_info": model_info, "status_code": 200})
+
+# **************************** DATA SCIENTIST ********************************************************     
+
+def model_store(data):
+    model_name = data["model_name"]
+    input_data = json.dumps(data["model_input"])
+    no_of_inputs = len(data["model_input"])
+    input_format = data["model_input_format"]
+    output_format = data["model_output"]
+    model_description = data["model_description"]
+    request_dict = {
+        "model_name": model_name,
+        "no_of_inputs": no_of_inputs,
+        "input_data": input_data,
+        "input_format": input_format,
+        "output_format": output_format,
+        "model_description":model_description
+    }
+    response = req_sess.post(
+        "http://localhost:" + str(MODEL_PORT) + "/model",
+        json=request_dict).content
+    response = response.decode('ascii')
+    print(response)
+
+def savefilestoazure(zip_file,model_name):
+    service = ShareFileClient.from_connection_string(conn_str="https://hackathonfilesstorage.file.core.windows.net/DefaultEndpointsProtocol=https;AccountName=hackathonfilestorage;AccountKey=gdZHKPvMvlkDnpMcxMxu2diC/bRqvjptH7qJlbx5VI/95L/p6H932ZOTZwg5kuWbyUJ6Y8TCrh3nqIlyG+YD2g==;EndpointSuffix=core.windows.net", share_name="hackathon/Model_Package", file_path=model_name+".zip")
+    
+    with open(zip_file, "rb") as source_file:
+      service.upload_file(source_file)    
+
+@app.route('/dataScientist_home')
+def upload_file():
+   return render_template('dataScientist.html')
+
+@app.route('/dataScientist', methods = ['GET', 'POST'])
+def upload():
+   if request.method == 'POST':
+      f = request.files['zipfile']
+      zip_file = f
+
+      try:
+        with zipfile.ZipFile(f.filename) as zf:
+            zf.testzip()
+      except zipfile.BadZipfile:
+         return False
+
+      f.save(secure_filename(f.filename))
+      source_folder = os.getcwd() + "/temp"
+      os.mkdir(source_folder)
+      unzip_file(f.filename,source_folder)
+      file_json = open(source_folder + "/config.json", "rb")
+      data = json.load(file_json)
+      file_json.close()
+      model_name = data["model_name"]
+      savefilestoazure(zip_file.filename,model_name)
+      shutil.rmtree(source_folder)
+      os.remove(f.filename)
+      model_store(data)
+      return  
 
 if(__name__ == "__main__"):
     app.run(port=MODEL_PORT, debug=True)
