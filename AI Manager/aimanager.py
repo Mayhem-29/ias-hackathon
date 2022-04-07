@@ -39,12 +39,6 @@ def unzip_file(file_name,source_folder):
     with zipfile.ZipFile(file_name, 'r') as zip_ref:
         zip_ref.extractall(source_folder)
 
-@app.route("/")
-@cross_origin()
-def hello():
-    return ""
-
-    
 @app.route("/model", methods=['POST'])
 def model_store_in_database():
     req = request.get_json()
@@ -159,15 +153,23 @@ def savefilestoazure(zip_file,model_name):
     with open(zip_file, "rb") as source_file:
       service.upload_file(source_file)    
 
-@app.route('/dataScientist_home')
-def upload_file():
-   return render_template('dataScientist.html')
+# @app.route('/dataScientist_home')
+# def upload_file():
+#    return render_template('dataScientist.html')
+
+@app.route("/")
+@cross_origin()
+def hello():
+    return render_template('dataScientist.html')
+
+
 
 @app.route('/dataScientist', methods = ['GET', 'POST'])
 def upload():
    if request.method == 'POST':
       f = request.files['zipfile']
       zip_file = f
+      f.save(secure_filename(f.filename))
 
       try:
         with zipfile.ZipFile(f.filename) as zf:
@@ -175,7 +177,6 @@ def upload():
       except zipfile.BadZipfile:
          return False
 
-      f.save(secure_filename(f.filename))
       source_folder = os.getcwd() + "/temp"
       os.mkdir(source_folder)
       unzip_file(f.filename,source_folder)
@@ -187,7 +188,7 @@ def upload():
       shutil.rmtree(source_folder)
       os.remove(f.filename)
       model_store(data)
-      return redirect ('/upload')   
+      return redirect ('/')   
 
 if(__name__ == "__main__"):
     app.run(port=MODEL_PORT, debug=True)
