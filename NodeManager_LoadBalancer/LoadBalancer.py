@@ -2,11 +2,9 @@ from flask import Flask, request
 import requests
 import pymongo
 import sys
-from flask_cors import CORS, cross_origin
 
 session = requests.Session()
 app = Flask(__name__)
-cors = CORS(app)
 myclient=pymongo.MongoClient("mongodb+srv://hackathon:hackathon@hackathon.wgs03.mongodb.net/Hackathon?retryWrites=true&w=majority")
 mydb=myclient["Hackathon"]
 mycollection=mydb["Node_db"]
@@ -51,10 +49,6 @@ endpoint = {
     },
 }
 
-@app.route("/")
-@cross_origin()
-def hello():
-    return ""
 
 @app.route("/get_node_id", methods=["POST"])
 def get_node_id():
@@ -77,7 +71,6 @@ def get_node_id():
         'node_id':resultant_node,
         'message':"Node Assigned.."
     }
-    print(reply)
     return reply
 
 
