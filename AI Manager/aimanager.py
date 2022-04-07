@@ -10,10 +10,12 @@ import zipfile
 from azure.storage.fileshare import ShareFileClient
 import numpy as np
 import shutil
+import jwt
 from flask_cors import CORS, cross_origin
 
 app = Flask(__name__)
 cors = CORS(app)
+app.config['SECRET_KEY'] = "dub_nation"
 
 req_sess = requests.Session()
 
@@ -31,6 +33,12 @@ collection = db["ModelDB"]
 SENSOR_PORT = 9100
 MODEL_PORT = 9200
 PLATFORM_PORT = 9300
+
+def read_json(file_name):
+    with open(file_name, "r") as f:
+        return json.load(f)
+
+constants = read_json("constants.json")
 
 def unzip_file(file_name,source_folder):
     '''
@@ -160,7 +168,15 @@ def savefilestoazure(zip_file,model_name):
 @app.route("/")
 @cross_origin()
 def hello():
-    return render_template('dataScientist.html')
+    try:
+        print(request.args['jwt'])
+        token = request.args['jwt']
+        data = jwt.decode(token, app.config['SECRET_KEY'], algorithms='HS256')
+        print(data)
+        return render_template('dataScientist.html', upload_url = "")
+    except Exception as e:
+        print(e)
+        return redirect(constants["BASE_URL"] + constants["PORT"]["APP_PORT"] + constants["ENDPOINTS"]["APP_MANAGER"]["home"])
 
 
 
