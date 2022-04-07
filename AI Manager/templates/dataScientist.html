@@ -110,7 +110,7 @@
 
 <body>
 
-  <!-- <form id="file-upload" action = "http://localhost:9450/dataScientist" method = "POST" enctype = "multipart/form-data">
+  <!-- <form id="file-upload" action = "{{ upload_url }}" method = "POST" enctype = "multipart/form-data">
         <label for="myfile">Select a file:</label>
         <input type="file" id="myfile" name="zipfile"><br><br>
         <input type="submit">
@@ -119,7 +119,7 @@
     <div class="app-header">MLOps Seva</div>
     <div class="sub-container">
       <div class="title">Application Upload Form</div>
-      <form id="file-upload" action="http://localhost:9450/dataScientist" method="POST" enctype="multipart/form-data">
+      <form id="file-upload" action="http://localhost:9200/dataScientist" method="POST" enctype="multipart/form-data">
         <div class="form-control">
           <div class="label">AI Model Details</div>
           <label class="upload-button" for="myfile">Upload zip file</label>

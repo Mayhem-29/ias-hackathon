@@ -12,7 +12,7 @@ from azure.storage.fileshare import ShareDirectoryClient
 import os
 from azure.identity import DefaultAzureCredential
 from flask_cors import CORS, cross_origin
-
+import jwt
 
 
 req_sess = requests.Session()
@@ -24,12 +24,21 @@ UPLOAD_FOLDER = os.getcwd()
 app = Flask(__name__)
 cors = CORS(app)
 
+app.config['SECRET_KEY'] = "dub_nation"
+
 DATA_SCIENTIST_PORT = 9450
 SENSOR_PORT = 9100
 MODEL_PORT = 9200
 PLATFORM_PORT = 9300
 
 base_url = "http://localhost:" + str(DATA_SCIENTIST_PORT) 
+
+def read_json(file_name):
+    with open(file_name, "r") as f:
+        return json.load(f)
+
+constants = read_json("constants.json")
+
 
 def allowed_file(filename):
     '''
@@ -100,7 +109,17 @@ def hello():
 
 @app.route('/upload')
 def upload_file():
-   return render_template('dataScientist.html')
+    try:
+        print(request.args['jwt'])
+        token = request.args['jwt']
+        data = jwt.decode(token, app.config['SECRET_KEY'], algorithms='HS256')
+        print(data)
+        return render_template('dataScientist.html', upload_url = "")
+    except Exception as e:
+        print(e)
+        return redirect(constants["BASE_URL"] + constants["PORT"]["APP_PORT"] + constants["ENDPOINTS"]["APP_MANAGER"]["home"])
+    
+
 
 @app.route('/dataScientist', methods = ['GET', 'POST'])
 def upload():

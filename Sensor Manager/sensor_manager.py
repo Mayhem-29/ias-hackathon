@@ -7,6 +7,7 @@ import threading
 import pymongo
 # from topics import * 
 from flask_cors import CORS, cross_origin
+import jwt
 
 # app = Flask(name)
 
@@ -116,8 +117,8 @@ IP_ADDR = "13.71.94.55:9092"
 
 app = Flask(__name__)
 cors = CORS(app)
-app.config['SECRET_KEY'] = "sensor_manager"
-
+# app.config['SECRET_KEY'] = "sensor_manager"
+app.config['SECRET_KEY'] = "dub_nation"
 def generateint():
     return random.randint(10,10000)
 
@@ -125,11 +126,24 @@ def generatefloat():
     return int(random.random()*100)/100
 
 
+def read_json(file_name):
+    with open(file_name, "r") as f:
+        return json.load(f)
+
+constants = read_json("constants.json")
+
 
 @app.route("/")
 @cross_origin()
 def home():
-    return render_template("installsensor.html")
+    try:
+        print(request.args['jwt'])
+        token = request.args['jwt']
+        data = jwt.decode(token, app.config['SECRET_KEY'], algorithms='HS256')
+        return render_template("installsensor.html")
+    except:
+        return redirect(constants["BASE_URL"] + constants["PORT"]["APP_PORT"] + constants["ENDPOINTS"]["APP_MANAGER"]["home"])
+    
 
 
 @app.route('/install_sensortype', methods=["POST"])
