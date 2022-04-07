@@ -73,5 +73,13 @@ def login():
         return jsonify({'message': 'Username does not exist', 'status_code': 401}), 401
 
 
+@app.route("/logout")
+def logout():
+    print(request.args['jwt'])
+    token = request.args['jwt']
+    data = jwt.decode(token, app.config['SECRET_KEY'], algorithms='HS256')
+    return redirect(constants["BASE_URL"] + constants["PORT"]["APP_PORT"] + constants["ENDPOINTS"]["APP_MANAGER"]["home"])
+
+
 if __name__ == "__main__":
     app.run(port=constants["PORT"]["AUTH_PORT"], debug=True)

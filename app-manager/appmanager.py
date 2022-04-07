@@ -67,7 +67,9 @@ def dev():
         print(request.args['jwt'])
         token = request.args['jwt']
         data = jwt.decode(token, app.config['SECRET_KEY'], algorithms='HS256')
-        return render_template("appdeveloper.html")
+        return render_template("appdeveloper.html",
+            home=constants["BASE_URL"] + str(constants["PORT"]["APP_PORT"]) + constants["ENDPOINTS"]["APP_MANAGER"]["home"]
+        )
     except:
         return redirect("/")
 
@@ -79,7 +81,9 @@ def enduser():
         print(request.args['jwt'])
         token = request.args['jwt']
         data = jwt.decode(token, app.config['SECRET_KEY'], algorithms='HS256')
-        return render_template("enduser.html")
+        return render_template("enduser.html",
+        home=constants["BASE_URL"] + str(constants["PORT"]["APP_PORT"]) + constants["ENDPOINTS"]["APP_MANAGER"]["home"]
+        )
     except:
         return redirect("/")
 
