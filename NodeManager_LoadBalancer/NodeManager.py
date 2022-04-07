@@ -1,10 +1,8 @@
 from flask import Flask, request
 import requests
-from flask_cors import CORS, cross_origin
 
 session = requests.Session()
 app = Flask(__name__)
-cors = CORS(app)
 # myclient=pymongo.MongoClient("mongodb+srv://hackathon:hackathon@hackathon.wgs03.mongodb.net/Hackathon?retryWrites=true&w=majority")
 # mydb=myclient["Hackathon"]
 # mycollection=mydb["Request_db"]
@@ -44,15 +42,10 @@ endpoint = {
     "deployer": {
         "base_url": "http://localhost:" + str(DEPLOYER_PORT),
         "uri": {
-            "send_to_deployer": "/send_to_deployer"
+            "send_to_deployer": "/send_to_deployer",
         }
     },
 }
-
-@app.route("/")
-@cross_origin()
-def hello():
-    return ""
 
 
 @app.route("/get_schedule_app", methods=["POST"])
@@ -77,12 +70,12 @@ def get_schedule_app():
         give empty node id and app_inst_id to deployer
     """
 
-    deploy = {}
-    deploy["app_inst_id"]=req["app_inst_id"]
-    deploy["node_id"]=""
+    deploy = {
+        "app_inst_id" : req["app_inst_id"],
+        "node_id":""
+        }
 
     if req["end_status"]==0:
-        print("sending to loadbalancer")
         load_reply = session.post(endpoint['load_balancer']['base_url'] + endpoint['load_balancer']['uri']['get_node_id'],json={'stand_alone':req['stand_alone']}).json()
         """
         load_reply={
@@ -90,13 +83,10 @@ def get_schedule_app():
             'message': str
         }
         """
-        print("got from to loadbalancer")
         node_id=load_reply['node_id']
         deploy["node_id"]=node_id
         print(load_reply["message"])
-    
 
-    
     status = session.post(endpoint['deployer']['base_url'] + endpoint['deployer']['uri']['send_to_deployer'], json=deploy).json()
     """
     status={
@@ -104,7 +94,6 @@ def get_schedule_app():
         "message"
     }
     """
-    print(status)
     return status
 
 

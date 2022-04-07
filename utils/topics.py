@@ -52,7 +52,7 @@ def list_topics():
 
 
 if __name__=="__main__":
-    init()
+    # init()
 
     while True:
         optn = int(input("Enter option(create:1, delete:2, list:3): "))

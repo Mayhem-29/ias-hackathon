@@ -7,6 +7,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <title>AI Platform | MLOps Seva</title>
 </head>
+<script>
+  function getFileData(myFile){
+    var file = myFile.files[0];  
+    var filename = file.name;
+    document.getElementById("file_name").innerHTML = "Uploaded: " + filename;
+  }
+</script>
 <style>
   * {
     font-family: Arial;
