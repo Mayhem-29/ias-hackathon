@@ -2,7 +2,7 @@ import json
 from kafka.admin import KafkaAdminClient, NewTopic
 from kafka.consumer import KafkaConsumer
 
-f = open("../constants.json", 'r')
+f = open("./constants.json", 'rb')
 constants = json.loads(f)
 IP_ADDR = constants['KAFKA_HOST_ADDR']
 # IP_ADDR = "0.0.0.0:9092"
@@ -52,7 +52,7 @@ def list_topics():
 
 
 if __name__=="__main__":
-    init()
+    # init()
 
     while True:
         optn = int(input("Enter option(create:1, delete:2, list:3): "))

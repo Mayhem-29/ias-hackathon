@@ -5,6 +5,7 @@ from threading import Thread
 from datetime import datetime,date,timedelta
 import math
 import heapq
+from flask_cors import CORS, cross_origin
 
 app = Flask(__name__)
 
@@ -144,6 +145,8 @@ def scheduling_function():
     
     while(True):
         if Scheduler_queue:
+            print(Scheduler_queue[0][0])
+            print(str(datetime.now()).rsplit(':',1)[0])
             while str(datetime.now()).rsplit(':',1)[0]<Scheduler_queue[0][0]:
                 pass
             appInfo = heapq.heappop(Scheduler_queue)

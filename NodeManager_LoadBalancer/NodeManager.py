@@ -63,7 +63,6 @@ def get_schedule_app():
             app_inst_id: str,
             end_status: 1
         }
-
     1)if end_status==0,
         call load balancer and give stand_alone status(no use yet)
         get node id and app_inst_id to give to deployer
