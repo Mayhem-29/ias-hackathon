@@ -1,10 +1,12 @@
 from flask import Flask,json,request
-import pymongo
+import pymongo, pytz
 import json, requests
+from pytz import timezone
 from threading import Thread
 from datetime import datetime,date,timedelta
 import math
 import heapq
+
 
 app = Flask(__name__)
 
@@ -144,7 +146,7 @@ def scheduling_function():
     
     while(True):
         if Scheduler_queue:
-            while str(datetime.now()).rsplit(':',1)[0]<Scheduler_queue[0][0]:
+            while str(datetime.now(pytz.timezone('Asia/Kolkata'))).rsplit(':',1)[0]<Scheduler_queue[0][0]:
                 pass
             appInfo = heapq.heappop(Scheduler_queue)
             #appInfo is a tuple that has 4 fields : start_time, end_time, app_inst_id, stand_alone
@@ -155,7 +157,7 @@ def termination_function():
     while(True):
         if Termination_queue:
             # print("118 --- ",Termination_queue[0][0])
-            while str(datetime.now()).rsplit(':',1)[0]<Termination_queue[0][0]:
+            while str(datetime.now(pytz.timezone('Asia/Kolkata'))).rsplit(':',1)[0]<Termination_queue[0][0]:
                 pass
             # print("121 termination function ",str(datetime.now()).rsplit(':',1)[0])
             appInstId = heapq.heappop(Termination_queue)[1]
