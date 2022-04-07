@@ -5,7 +5,7 @@
     "PORT": {
         "SENSOR_PORT": "9100",
         "MODEL_PORT": "9200",
-        "PLATFORM_PORT": "9300",
+        "LOAD_PORT": "9300",
         "APP_PORT": "9400",
         "NODE_PORT": "9500",
         "SCH_PORT": "9600",
@@ -38,18 +38,21 @@
             "user": "/enduser",
             "home": "/"
         },
-        "PLATFORM_MANAGER": {
-            "get_sensor_info": "/get_sensor_info",
-            "get_model_info": "/get_model_info",
-            "free_instance_by_type_id": "/free_instance_by_type_id",
-            "predict_model": "/predict_model"
-        },
         "SCHEDULER_MANAGER": {
             "deploy_app": "/sendInfo"
         },
         "AUTH_MANAGER": {
             "login": "/login",
             "register": "/register"
-        }
+        },
+        "LIST":["SENSOR","MODEL","APP","AUTH","DEPLOYER","NODE","LOAD","SCHEDULER"],
+    "FILES":{"SENSOR_FILE": "sensor_manager.py",
+    "MODEL_FILE": "aimanager.py",
+    "APP_FILE": "appmanager.py",
+    "AUTH_FILE": "auth-manager.py",
+    "DEPLOYER_FILE": "deployer.py",
+    "NODE_FILE": "NodeManager.py",
+    "LOAD_FILE" : "LoadBalancer.py",
+    "SCHEDULER_FILE": "Scheduler.py"}
     }
 }

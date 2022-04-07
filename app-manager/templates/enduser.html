@@ -28,7 +28,8 @@
             }
          })
          .then(function (response){
-            return response.json()
+            resp = response.json();
+            alert(resp["message"]);
          })
       }
 

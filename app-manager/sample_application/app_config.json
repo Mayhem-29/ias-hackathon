@@ -1,9 +1,0 @@
-{
-    "app_name": "sample_application",
-    "app_author": "Yash",
-    "model_list": [
-        {
-            "model_name": "digit_pred"      
-        }
-    ]
-}
