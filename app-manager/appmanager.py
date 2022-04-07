@@ -1,6 +1,6 @@
 from email.policy import default
 import requests
-from flask import Flask, render_template, session, jsonify, request
+from flask import Flask, redirect, render_template, session, jsonify, request, url_for
 from pymongo import MongoClient
 from flask_session import Session
 from sqlalchemy import false
@@ -12,10 +12,14 @@ import kafka_util, file_storage, generate_api, dockerfile_generator
 import os
 import zipfile
 from flask_cors import CORS, cross_origin
+import jwt
+
 
 app = Flask(__name__)
 cors = CORS(app)
+
 app.config['SECRET_KEY'] = "dub_nation"
+
 
 DB_SERVER = "mongodb+srv://hackathon:hackathon@hackathon.wgs03.mongodb.net/Hackathon?retryWrites=true&w=majority"
 client = MongoClient(DB_SERVER)
@@ -36,26 +40,52 @@ NODE_PORT = 9500
 SCH_PORT = 9600
 
 
-@app.route("/")
-@cross_origin()
-def hello():
-    return render_template("landing_page.html")
-
-@app.route("/developer")
-def dev():
-    return render_template("appdeveloper.html")
-
-@app.route("/enduser")
-def enduser():
-    return render_template("enduser.html")
-
 
 def read_json(file_name):
     with open(file_name, "r") as f:
         return json.load(f)
 
-constants = read_json("app-manager/constants.json")
+constants = read_json("constants.json")
 
+
+@app.route("/")
+@cross_origin()
+def hello():
+    return render_template("landing_page.html", 
+        login=constants["BASE_URL"] + str(constants["PORT"]["AUTH_PORT"]) + constants["ENDPOINTS"]["AUTH_MANAGER"]["login"],
+        register=constants["BASE_URL"] + str(constants["PORT"]["AUTH_PORT"]) + constants["ENDPOINTS"]["AUTH_MANAGER"]["register"],
+        data_scientist=constants["BASE_URL"] + str(constants["PORT"]["MODEL_PORT"]) + constants["ENDPOINTS"]["AI_MANAGER"]["data_scientist"],
+        admin=constants["BASE_URL"] + str(constants["PORT"]["SENSOR_PORT"]) + constants["ENDPOINTS"]["SENSOR_MANAGER"]["admin"],
+        developer=constants["BASE_URL"] + str(constants["PORT"]["APP_PORT"]) + constants["ENDPOINTS"]["APP_MANAGER"]["developer"],
+        user=constants["BASE_URL"] + str(constants["PORT"]["APP_PORT"]) + constants["ENDPOINTS"]["APP_MANAGER"]["user"],
+    )
+
+
+@app.route("/developer")
+def dev():
+    try:
+        print(request.args['jwt'])
+        token = request.args['jwt']
+        data = jwt.decode(token, app.config['SECRET_KEY'], algorithms='HS256')
+        return render_template("appdeveloper.html",
+            home=constants["BASE_URL"] + str(constants["PORT"]["APP_PORT"]) + constants["ENDPOINTS"]["APP_MANAGER"]["home"]
+        )
+    except:
+        return redirect("/")
+
+
+@app.route("/enduser")
+@cross_origin()
+def enduser():
+    try:
+        print(request.args['jwt'])
+        token = request.args['jwt']
+        data = jwt.decode(token, app.config['SECRET_KEY'], algorithms='HS256')
+        return render_template("enduser.html",
+        home=constants["BASE_URL"] + str(constants["PORT"]["APP_PORT"]) + constants["ENDPOINTS"]["APP_MANAGER"]["home"]
+        )
+    except:
+        return redirect("/")
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in set(["zip"])

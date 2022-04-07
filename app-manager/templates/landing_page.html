@@ -10,27 +10,67 @@
             let username = document.getElementById("username").value;
             let password = document.getElementById("password").value;
             let role = document.querySelector('input[name="role"]:checked').value;
-            let url = 'http://localhost:9400/';
+            let url = '';
 
-            switch (role) {
-                case "data_scientist":
-                    url = 'http://localhost:9450/upload'
-                    break;
-                case "platform_admin":
-                    url = 'http://localhost:9100/'
-                    break;
-                case "app_developer":
-                    url = 'http://localhost:9400/developer'
-                    break;
-                case "user":
-                    url = 'http://localhost:9400/enduser'
-                    break;
-                default:
-                    url = 'http://localhost:9400/'
-                    break;
-            }
+            fetch('{{ login }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    username: username,
+                    password: password,
+                    role: role
+                })
+            }).then(function(response) {
+                return response.json();
+            }).then(function(data) {
+                if(data['status_code'] == 200) {
+                    if(role == 'platform_admin'){
+                        url = '{{ admin }}';
+                    }else if(role == 'data_scientist'){
+                        url = '{{ data_scientist }}';
+                    }else if(role == 'app_developer'){
+                        url = '{{ developer }}';
+                    }else if(role == 'user'){
+                        url = '{{ user }}';
+                    }
 
-            window.location.href = url;
+                    username.value = '';
+                    password.value = '';
+                    role.value = '';
+
+                    window.location.href = url + '?jwt=' + data['access_token'];
+                } else {
+                    alert(data.message);
+                }
+            });
+        }
+        
+        function registerUser(){
+            let username = document.getElementById("username").value;
+            let password = document.getElementById("password").value;
+            let role = document.querySelector('input[name="role"]:checked').value;
+            let url = '';
+
+            fetch('{{ register }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    username: username,
+                    password: password,
+                    role: role
+                })
+            }).then(function(response) {
+                return response.json();
+            }).then(function(data) {
+                username.value = '';
+                password.value = '';
+                role.value = '';
+                alert(data.message);
+            });
         }
 
         function showLogin(){
@@ -108,7 +148,7 @@
         .form-control button {
             width: 50%;
             cursor: pointer;
-            margin: 0% 22.5%;
+            margin: 10px 0px;
             background-color: #045e86;
             color: #eee;
             border: none;
@@ -173,6 +213,7 @@
                 </div>
                 <div class="form-control">
                     <button type="button" onclick="javascript:loginUser()">Login</button>
+                    <button type="button" onclick="javascript:registerUser()">Register</button>
                 </div>
             </form>
         </div>

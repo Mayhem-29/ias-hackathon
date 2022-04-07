@@ -5,10 +5,19 @@ import json
 import time
 import threading
 import pymongo
+# from topics import * 
+from flask_cors import CORS, cross_origin
+import jwt
+
 from init_sensor import *
-CONST=""
-with open("constants.json","r") as f:
-    CONST = json.load(f)
+
+
+def read_json(file_name):
+    with open(file_name, "r") as f:
+        return json.load(f)
+
+constants = read_json("constants.json")
+
 
 ############################################## List of APIs #######################################################
 
@@ -46,7 +55,7 @@ from kafka.admin import KafkaAdminClient, NewTopic
 from kafka.consumer import KafkaConsumer
 from kafka import KafkaProducer
 
-IP_ADDR = CONST["KAFKA_HOST_ADDR"]
+IP_ADDR = constants["KAFKA_HOST_ADDR"]
 
 def serialize(msg):
         return json.dumps(msg).encode('utf-8')
@@ -125,19 +134,28 @@ admin_client = KafkaAdminClient(
 
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = "sensor_manager"
+cors = CORS(app)
+# app.config['SECRET_KEY'] = "sensor_manager"
+app.config['SECRET_KEY'] = "dub_nation"
+def generateint():
+    return random.randint(10,10000)
+
+def generatefloat():
+    return int(random.random()*100)/100
+
 
 
 @app.route("/")
 @cross_origin()
 def home():
-    '''
-    Loads Html which contains forms for Adding and Deleting Sensor Instances.
-    '''
+    try:
+        print(request.args['jwt'])
+        token = request.args['jwt']
+        data = jwt.decode(token, app.config['SECRET_KEY'], algorithms='HS256')
+        return render_template("installsensor.html")
+    except:
+        return redirect(constants["BASE_URL"] + constants["PORT"]["APP_PORT"] + constants["ENDPOINTS"]["APP_MANAGER"]["home"])
     
-    #type_info.insert_one({"_id":0, "user_name":"Soumi"})
-    return render_template("installsensor.html")
-    # return {"Sensor_manager":"IAS"}
 
 @app.route("/is_sensor_manager_alive")
 def is_sensor_manager_alive():
@@ -536,6 +554,6 @@ if(__name__ == "__main__"):
     
     init_sen()    # Initialize Old Sensors
     
-    app.run(host="0.0.0.0",port=CONST["PORT"]["SENSOR_PORT"], debug = True)
+    app.run(host="0.0.0.0",port=constants["PORT"]["SENSOR_PORT"], debug = True)
     
 
