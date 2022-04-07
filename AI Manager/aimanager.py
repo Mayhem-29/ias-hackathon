@@ -1,14 +1,6 @@
 from re import X
-<<<<<<< Updated upstream
-from flask import Flask
-from flask import session
-from flask import jsonify
-from flask import request
-from flask_mongoalchemy import MongoAlchemy
-=======
 from flask import Flask, jsonify, redirect, request, render_template
 from werkzeug.utils import secure_filename
->>>>>>> Stashed changes
 import pymongo
 import json
 import os
@@ -18,15 +10,12 @@ import zipfile
 from azure.storage.fileshare import ShareFileClient
 import numpy as np
 import shutil
-<<<<<<< Updated upstream
-=======
 from flask_cors import CORS, cross_origin
 
 app = Flask(__name__)
 cors = CORS(app)
 
 req_sess = requests.Session()
->>>>>>> Stashed changes
 
 app = Flask(__name__)
 
@@ -50,7 +39,12 @@ def unzip_file(file_name,source_folder):
     with zipfile.ZipFile(file_name, 'r') as zip_ref:
         zip_ref.extractall(source_folder)
 
+@app.route("/")
+@cross_origin()
+def hello():
+    return ""
 
+    
 @app.route("/model", methods=['POST'])
 def model_store_in_database():
     req = request.get_json()
@@ -82,16 +76,6 @@ def get_list():
 def get_pkl():
     req = request.get_json()
     model_nam = req.get('model_name')
-<<<<<<< Updated upstream
-    zip_name = model_nam + ".zip"
-    service = ShareFileClient.from_connection_string(conn_str="https://hackathonfilesstorage.file.core.windows.net/DefaultEndpointsProtocol=https;AccountName=hackathonfilestorage;AccountKey=gdZHKPvMvlkDnpMcxMxu2diC/bRqvjptH7qJlbx5VI/95L/p6H932ZOTZwg5kuWbyUJ6Y8TCrh3nqIlyG+YD2g==;EndpointSuffix=core.windows.net", share_name="hackathon/Model_Package", file_path=zip_name)
-    with open(model_nam+".zip", "wb") as file_handle:
-        data = service.download_file()
-        data.readinto(file_handle)
-    os.mkdir(model_nam)
-    unzip_file(zip_name,os.getcwd()+"/"+model_nam)
-    
-=======
     if not os.path.exists(model_nam):
         zip_name = model_nam + ".zip"
         service = ShareFileClient.from_connection_string(conn_str="https://hackathonfilesstorage.file.core.windows.net/DefaultEndpointsProtocol=https;AccountName=hackathonfilestorage;AccountKey=gdZHKPvMvlkDnpMcxMxu2diC/bRqvjptH7qJlbx5VI/95L/p6H932ZOTZwg5kuWbyUJ6Y8TCrh3nqIlyG+YD2g==;EndpointSuffix=core.windows.net", share_name="hackathon/Model_Package", file_path=zip_name)
@@ -102,7 +86,6 @@ def get_pkl():
         unzip_file(zip_name,os.getcwd()+"/"+model_nam)
         os.remove(zip_name)
 
->>>>>>> Stashed changes
     list_a = collection.find()
     pickle_file = ""
     for iter in (list_a):
@@ -112,12 +95,9 @@ def get_pkl():
     if(pickle_file == ""):
         return jsonify({"pickle_file": "pickle file not found", "status_code":500})
     else:
-        # input_preprocessed = os.system('python ' + os.getcwd() + "/" + model_nam + "/" + "preprocessing.py", req.get('input'))
         model = pickle.load(open(pickle_file, "rb"))
         prediction = str(model.predict(np.array(req["data"]).reshape(1, -1))[0])
-        shutil.rmtree(os.getcwd()+"/"+model_nam)
-        os.remove(zip_name)
-        # output = os.system('python ' + os.getcwd() + "/" + model_nam + "/" + "postprocessing.py" + prediction)
+        # shutil.rmtree(os.getcwd()+"/"+model_nam)
         return jsonify({"prediction" : prediction, "status_code" : 200})
 
 
