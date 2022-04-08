@@ -8,8 +8,8 @@
         "LOAD_PORT": "9300",
         "APP_PORT": "9400",
         "NODE_PORT": "9500",
-        "SCH_PORT": "9600",
-        "DEPLOYER_PORT": "9700",
+        "SCHEDULER_PORT": "9600",
+        "DEPLOYER_PORT": "9900",
         "AUTH_PORT": "9800"
     },
     "ENDPOINTS": {
@@ -44,7 +44,8 @@
         "AUTH_MANAGER": {
             "login": "/login",
             "register": "/register"
-        },
+        }
+    },
         "LIST":["SENSOR","MODEL","APP","AUTH","DEPLOYER","NODE","LOAD","SCHEDULER"],
     "FILES":{"SENSOR_FILE": "sensor_manager.py",
     "MODEL_FILE": "aimanager.py",
@@ -55,4 +56,4 @@
     "LOAD_FILE" : "LoadBalancer.py",
     "SCHEDULER_FILE": "Scheduler.py"}
     }
-}
+

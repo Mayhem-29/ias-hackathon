@@ -6,10 +6,10 @@ import os
 from azure.identity import DefaultAzureCredential
 
 
-def upload_file(folder, file_name, file_path):
+def upload_file(file_name, file_path):
     service = ShareFileClient.from_connection_string(
         conn_str="https://hackathonfilesstorage.file.core.windows.net/DefaultEndpointsProtocol=https;AccountName=hackathonfilestorage;AccountKey=gdZHKPvMvlkDnpMcxMxu2diC/bRqvjptH7qJlbx5VI/95L/p6H932ZOTZwg5kuWbyUJ6Y8TCrh3nqIlyG+YD2g==;EndpointSuffix=core.windows.net",
-        share_name="hackathon/" + folder,
+        share_name="hackathon/Applications_Docker_Image",
         file_path=file_name
     )
     print(file_path)
@@ -17,16 +17,16 @@ def upload_file(folder, file_name, file_path):
         service.upload_file(source_file)
 
 
-def download_file(folder, file_name, file):
+def download_file(file_name, file):
     service = ShareFileClient.from_connection_string(
         conn_str="https://hackathonfilesstorage.file.core.windows.net/DefaultEndpointsProtocol=https;AccountName=hackathonfilestorage;AccountKey=gdZHKPvMvlkDnpMcxMxu2diC/bRqvjptH7qJlbx5VI/95L/p6H932ZOTZwg5kuWbyUJ6Y8TCrh3nqIlyG+YD2g==;EndpointSuffix=core.windows.net",
-        share_name="hackathon/Application_Package" + folder, 
+        share_name="hackathon/Applications_Docker_Image", 
         file_path=file_name
     )
 
     with open(file, "wb") as source_file:
         data = service.download_file()
-        data.readinto(file)
+        data.readinto(source_file)
 
 
 

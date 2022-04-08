@@ -13,6 +13,7 @@ import os
 import zipfile
 from flask_cors import CORS, cross_origin
 import jwt
+import shutil
 
 
 app = Flask(__name__)
@@ -154,22 +155,23 @@ def generate_api_file(model_list, sensor_instances, location, folder, app_name):
 
         # file_storage.upload_file('docker_image', app_name+'_latest.tar.gz', app_name+'_latest.tar.gz')
         
-        AppInstanceDb.insert_one({
+        id = AppInstanceDb.insert_one({
             "location": location,
             # "docker_image": app_name+'_latest.tar.gz'
             "docker_image": folder+'/'+app_name,
             "node_id" : None,
         })
 
-        app_ins_id = str(AppInstanceDb.find_one({
-            "location": location,
-            # "docker_image": app_name+'_latest.tar.gz'
-            "docker_image": folder+'/'+app_name,
-        })['_id'])
+        # app_ins_id = str(AppInstanceDb.find_one({
+        #     "location": location,
+        #     # "docker_image": app_name+'_latest.tar.gz'
+        #     "docker_image": folder+'/'+app_name,
+        # })['_id'])
 
-        print(app_ins_id)
 
-        return app_ins_id
+        print(id.inserted_id)
+
+        return str(id.inserted_id)
     else:
         return None
 
@@ -241,6 +243,10 @@ def deploy_app():
 
     # os.system("")
 
+    print(os.getcwd())
+    shutil.make_archive(app_inst_id, 'zip', os.getcwd() + "/" + app_name)
+    file_storage.upload_file("Applications_Docker_Image", app_inst_id + ".zip", app_inst_id + ".zip")
+    os.remove(app_inst_id + ".zip")
 
     payload = {
         "app_inst_id" : app_inst_id,
@@ -334,7 +340,7 @@ def upload_application():
                     models_list.append(n)
 
         if len(models_list) != len(config['app_config']['model_list']):
-            return jsonify({"status_code":400, 'message': 'Model doesnot exist'})
+            return jsonify({"status_code":400, 'message': 'Model does not exist'})
 
         ##h------------------
 
@@ -362,4 +368,4 @@ def upload_application():
 
 
 if(__name__ == "__main__"):
-    app.run(port=constants["PORT"]["APP_PORT"], debug=True)
+    app.run(port=constants["PORT"]["APP_PORT"], debug=False)

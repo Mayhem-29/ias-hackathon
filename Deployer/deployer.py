@@ -1,23 +1,14 @@
-from asyncio import subprocess
-from concurrent.futures import thread
 from flask import Flask, request
 import requests
 import os
-import json
-from queue import PriorityQueue
-from threading import Thread
-from datetime import datetime
-from azure.storage.fileshare import ShareFileClient
-from paramiko import SSHClient, AutoAddPolicy
+from paramiko import SSHClient
 import pymongo
-from psutil import process_iter
-from signal import SIGTERM
 from flask_cors import CORS, cross_origin
-from subprocess import Popen
 from bson import ObjectId
-import time
-import threading
 import generate_docker_file as gdf
+import file_storage
+import zipfile
+import shutil
 
 
 
@@ -55,6 +46,13 @@ ports = {
     2004 : "False",
     2005 : "False"
 }
+
+def unzip_file(file_name,source_folder):
+    '''
+    unzips the file to folder of same name
+    '''
+    with zipfile.ZipFile(file_name, 'r') as zip_ref:
+        zip_ref.extractall(source_folder)
 
 @app.route("/")
 @cross_origin()
@@ -111,25 +109,13 @@ def send_to_deployer():
                         )
                 
 
-        # kill_port = port_dict[app_inst_id][0]
-        # pid = port_dict[app_inst_id][1]
-
-
-        # cmd = "taskkill /im" + str(pid)
-        # cmd = "sudo pkill -9 -P" + str(pid)
-        # os.system(cmd)
-        # kill_port = port_dict[app_inst_id]
-        # for proc in process_iter():
-        #     for conns in proc.connections(kind='inet'):
-        #         if conns.laddr.port == kill_port:
-        #             proc.send_signal(SIGTERM)
         print("kill_time")
         os.system(f"sudo docker exec -it $(sudo docker ps -q --filter ancestor={app_inst_id}) kill 1")
         os.system(f"sudo docker image remove -f {app_inst_id})")
         ports[kill_port] = "False"
         # port_dict[app_inst_id] = None
         del port_dict[app_inst_id]
-
+        shutil.rmtree(app_inst_id)
         status = {
             "status":"true",
             "message":"Process Killed!"
@@ -168,10 +154,14 @@ def send_to_deployer():
         # port_dict[app_inst_id].append(key)
         # print("app path: " , app_path)
 
-        gdf.generate_dockerfile(curr_port, app_path)
+        file_storage.download_file(app_inst_id + ".zip", app_inst_id + ".zip")
+        unzip_file(app_inst_id + ".zip",os.getcwd()+"/"+app_inst_id)
+        os.remove(app_inst_id + ".zip")
 
-        os.system(f"sudo docker build -t {app_inst_id}:latest {app_path}")
-        os.system(f"sudo docker run --net=host -it -d -p {curr_port}:{curr_port} {app_inst_id}")
+        gdf.generate_dockerfile(curr_port, os.getcwd()+"/"+app_inst_id)
+
+        os.system(f"docker build -t {app_inst_id}:latest {app_path}")
+        os.system(f"docker run --net=host -it -d -p {curr_port}:{curr_port} {app_inst_id}")
 
         print("app running at port {}".format(curr_port))
         

@@ -1,13 +1,14 @@
 import json,shutil,os
-f=open('constant.json')
+f=open('constants.json')
 data=json.load(f)
 dict={"SENSOR":"Sensor\ Manager",
     "MODEL": "AI\ Manager",
-    "PLATFORM": "",
+    "LOAD": "LoadBalancer",
     "APP": "app-manager",
     "DEPLOYER": "Deployer",
-    "NODE": "NodeManager_LoadBalancer",
-    "SCHEDULER":"Scheduler"}
+    "NODE": "NodeManager",
+    "SCHEDULER":"Scheduler",
+    "AUTH":"Auth\ Manager"}
 for service in data['LIST']:
     port=data["PORT"][service+"_PORT"]
     filename=data["FILES"][service+"_FILE"]
