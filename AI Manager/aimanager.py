@@ -189,7 +189,7 @@ def upload():
       f = request.files['zipfile']
       zip_file = f
       f.save(secure_filename(f.filename))
-
+      print(f.filename)
       try:
         with zipfile.ZipFile(f.filename) as zf:
             zf.testzip()

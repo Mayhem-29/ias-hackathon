@@ -64,6 +64,10 @@ def login():
                 app.config['SECRET_KEY'], 
                 algorithm='HS256'
             )
+
+            if not isinstance(access_token, str):
+                access_token = access_token.decode("utf-8")
+
             print(access_token)
             resp = jsonify({'access_token': access_token, 'status_code': 200}), 200
             return resp

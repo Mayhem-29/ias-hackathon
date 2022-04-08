@@ -110,8 +110,10 @@ def send_to_deployer():
                 
 
         print("kill_time")
-        os.system(f"sudo docker exec -it $(sudo docker ps -q --filter ancestor={app_inst_id}) kill 1")
-        os.system(f"sudo docker image remove -f {app_inst_id})")
+        os.system(f"sshpass -p Yash@1998 ssh yash@localhost 'sudo docker stop $(sudo docker ps -q --filter ancestor={app_inst_id});sudo docker image remove -f {app_inst_id}'")
+
+        # os.system(f"sudo docker exec -it $(sudo docker ps -q --filter ancestor={app_inst_id}) kill 1")
+        # os.system(f"sudo docker image remove -f {app_inst_id})")
         ports[kill_port] = "False"
         # port_dict[app_inst_id] = None
         del port_dict[app_inst_id]
@@ -158,10 +160,14 @@ def send_to_deployer():
         unzip_file(app_inst_id + ".zip",os.getcwd()+"/"+app_inst_id)
         os.remove(app_inst_id + ".zip")
 
-        gdf.generate_dockerfile(curr_port, os.getcwd()+"/"+app_inst_id)
+        gdf.generate_dockerfile(curr_port, os.getcwd() + "/" + app_inst_id)
 
-        os.system(f"docker build -t {app_inst_id}:latest {app_path}")
-        os.system(f"docker run --net=host -it -d -p {curr_port}:{curr_port} {app_inst_id}")
+        os.system(f"zip -r {app_inst_id}.zip {app_inst_id}")
+        os.system(f"sshpass -p 'Yash@1998' scp -o StrictHostKeyChecking=no {app_inst_id}.zip yash@localhost:/home/yash/azureuser")
+        os.system(f"sshpass -p Yash@1998 ssh yash@localhost 'cd /home/yash/azureuser/;unzip {app_inst_id}.zip;cd {app_inst_id};sudo docker build -t {app_inst_id}:latest .;sudo docker run --net=host -it -d -p {curr_port}:{curr_port} {app_inst_id}'")
+        
+        # os.system(f"docker build -t {app_inst_id}:latest {app_path}")
+        # os.system(f"docker run --net=host -it -d -p {curr_port}:{curr_port} {app_inst_id}")
 
         print("app running at port {}".format(curr_port))
         

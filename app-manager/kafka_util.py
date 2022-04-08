@@ -92,4 +92,4 @@ def post_to_producer(topic_name, msg):
 
 if __name__ == "__main__":
     list_topics()
-    # delete_topic("624cecf2df6c30ec42f9f9d0")
+    # delete_topic("624f5040fb1a448fdd9cf463")

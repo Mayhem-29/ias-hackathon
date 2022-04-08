@@ -9,6 +9,9 @@ def generate_dockerfile(port,folder,file):
     f=open("."+folder+"/Dockerfile","w")
     destination="/app"
     f.write("FROM python:3\n")
+    f.write("RUN  apt-get update\n\n")
+    f.write("RUN apt install sshpass\n\n")
+    f.write("RUN apt install zip\n\n")
     f.write("WORKDIR /app\n")
     # entries=os.listdir(os.getcwd())
     f.write("COPY . /app\n")

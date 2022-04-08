@@ -20,13 +20,13 @@ def upload_file(folder, file_name, file_path):
 def download_file(folder, file_name, file):
     service = ShareFileClient.from_connection_string(
         conn_str="https://hackathonfilesstorage.file.core.windows.net/DefaultEndpointsProtocol=https;AccountName=hackathonfilestorage;AccountKey=gdZHKPvMvlkDnpMcxMxu2diC/bRqvjptH7qJlbx5VI/95L/p6H932ZOTZwg5kuWbyUJ6Y8TCrh3nqIlyG+YD2g==;EndpointSuffix=core.windows.net",
-        share_name="hackathon/Application_Package" + folder, 
+        share_name="hackathon/" + folder, 
         file_path=file_name
     )
 
     with open(file, "wb") as source_file:
         data = service.download_file()
-        data.readinto(file)
+        data.readinto(source_file)
 
 
 

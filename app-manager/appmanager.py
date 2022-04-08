@@ -14,6 +14,7 @@ import zipfile
 from flask_cors import CORS, cross_origin
 import jwt
 import shutil
+import zipfile
 
 
 app = Flask(__name__)
@@ -47,6 +48,13 @@ def read_json(file_name):
         return json.load(f)
 
 constants = read_json("constants.json")
+
+def unzip_file(file_name,source_folder):
+    '''
+    unzips the file to folder of same name
+    '''
+    with zipfile.ZipFile(file_name, 'r') as zip_ref:
+        zip_ref.extractall(source_folder)
 
 
 @app.route("/")
@@ -208,6 +216,12 @@ def deploy_app():
     start_time= req["start_time"]
     duration= req["duration"]
     standalone = req["standalone"]
+
+    if not os.path.exists(app_name):
+        zip_name = app_name + ".zip"
+        file_storage.download_file("Application_Package", zip_name, zip_name)
+        unzip_file(zip_name, os.getcwd())
+        os.remove(zip_name)
 
     app = AppDB.find_one({ 'app_name': app_name })
     if app == None:
