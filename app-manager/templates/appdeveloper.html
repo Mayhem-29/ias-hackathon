@@ -144,10 +144,34 @@
       }
 
       .app-header {
+         display: flex;
+         flex: 1;
+         justify-content: space-between;
+      }
+
+      .app-header .heading {
          font-size: 25px;
          font-weight: 700;
          padding-bottom: 10px;
          text-decoration: underline;
+      }
+
+      .app-header .action-btn {
+         display: flex;
+         flex: 1;
+         justify-content: flex-end;
+      }
+
+      .app-header .action-btn button {
+         background-color: #045e86;
+         color: #eee;
+         border: none;
+         padding: 10px 20px;
+         margin: 0px 5px;
+         font-size: 14px;
+         font-weight: 700;
+         cursor: pointer;
+         margin: 0px 5px
       }
 
       footer {
@@ -166,7 +190,13 @@
 
    <body onload="show()">
       <div class="container">
-         <div class="app-header">MLOps Seva</div>
+         <div class="app-header">
+            <div class="heading">MLOps Seva</div>
+            <div class="action-btn">
+               <a href="{{ home }}"><button class="home">Home</button></a>
+               <a href="{{ home }}"><button class="logout">Logout</button></a>
+            </div>
+         </div>
          <div class="sub-container">
             <div class="title">Models</div>
             <div id="model-list">

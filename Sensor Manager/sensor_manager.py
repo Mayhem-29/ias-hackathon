@@ -154,7 +154,9 @@ def home():
         print("HI")
         # data = jwt.decode(token, app.config['SECRET_KEY'], algorithms='HS256')
         # print(data)
-        return render_template("installsensor.html")
+        return render_template("installsensor.html",
+            home=constants["BASE_URL"] + str(constants["PORT"]["APP_PORT"]) + constants["ENDPOINTS"]["APP_MANAGER"]["home"]
+        )
     except:
         return redirect(constants["BASE_URL"] + constants["PORT"]["APP_PORT"] + constants["ENDPOINTS"]["APP_MANAGER"]["home"])
     

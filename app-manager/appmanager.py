@@ -91,7 +91,7 @@ def enduser():
         token = request.args['jwt']
         data = jwt.decode(token, app.config['SECRET_KEY'], algorithms='HS256')
         return render_template("enduser.html",
-        home=constants["BASE_URL"] + str(constants["PORT"]["APP_PORT"]) + constants["ENDPOINTS"]["APP_MANAGER"]["home"]
+            home=constants["BASE_URL"] + str(constants["PORT"]["APP_PORT"]) + constants["ENDPOINTS"]["APP_MANAGER"]["home"]
         )
     except:
         return redirect("/")
