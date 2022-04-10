@@ -142,19 +142,19 @@
                 </div>
             </div>
             <div class="tab-container">
-                <div class="tab-item tab-selected">Sensor Manager</div>
-                <div class="tab-item" onclick="{{ ctrl_url }}">Controller Manager</div>
+                <div class="tab-item" onclick="{{ sensor_url }}">Sensor Manager</div>
+                <div class="tab-item tab-selected">Controller Manager</div>
             </div>
             <div class="sub-container">
-                <div class="title">Add Sensor Type</div>
-                <form action = "http://localhost:9100/install_sensortype" method = "POST">
+                <div class="title">Add Controller Type</div>
+                <form action = "{{ add_ctrl_type_api }}" method = "POST">
                     <div class="form-control">
-                        <label for="Sensor_Name">Sensor Type</label>
-                        <input type="text" id="Sensor_Name" name="sensor_type">
+                        <label for="ctrl_name">Controller Name :</label>
+                        <input type="text" id="ctrl_name" name="ctrl_name">
                     </div>
                     <div class="form-control">
-                        <label for="tof">Sensor Output Type</label>
-                        <input type="text" id="tof" name="output_type">
+                        <label for="ctrl_op">Controller Output Type :</label>
+                        <input type="text" id="ctrl_op" name="ctrl_op">
                     </div>
                     <div class="form-control">
                         <button type="submit">Submit</button>
@@ -163,23 +163,23 @@
             </div>
             <hr>
             <div class="sub-container">
-                <div class="title">Add Sensor Instance</div>
-                <form action = "http://localhost:9100/install_sensorins" method = "POST">
+                <div class="title">Add Controller Instance</div>
+                <form action = "{{ add_ctrl_instance_api }}" method = "POST">
                     <div class="form-control">
-                        <label for="sensor_type">Sensor Type</label>
-                        <input type="text" id="sensor_type" name="sensor_type">
+                        <label for="ctrl_type">Controller Type :</label>
+                        <input type="text" id="ctrl_type" name="ctrl_type">
                     </div>
                     <div class="form-control">
-                        <label for="location">Location:</label>
+                        <label for="location">Location :</label>
                         <input type="text" id="location" name="location">
                     </div>
                     <div class="form-control">
-                        <label for="sensor_ip">Sensor IP</label>
-                        <input type="text" id="sensor_ip" name="sensor_ip">
+                        <label for="ctrl_ip">IP : </label>
+                        <input type="text" id="ctrl_ip" name="ctrl_ip">
                     </div>
                     <div class="form-control">
-                        <label for="sensor_port">Port:</label>
-                        <input type="text" id="sensor_port" name="sensor_port">
+                        <label for="ctrl_port">Port :</label>
+                        <input type="text" id="ctrl_port" name="ctrl_port">
                     </div>
                     <div class="form-control">
                         <button type="submit">Submit</button>
