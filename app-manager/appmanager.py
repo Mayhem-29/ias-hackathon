@@ -119,7 +119,19 @@ def get_model_predict():
     return resp
 
 
-##################### Code Clean up ###############
+@app.route("/send_controller_message", methods=["POST"])
+def send_controller_message():
+    try:
+        print("Sending data to controller")
+        req = request.get_json()
+        print(req)
+        kafka_util.send_to_topic(req["controller_instance_id"], req["data"])
+        return jsonify({"message" : "Successfully sent the message", "status_code" : 200}), 200
+    except Exception as e:
+        print(e)
+        return jsonify({"message" : "Failed to send the message", "status_code" : 500}), 500
+
+
 
 def get_sensor_instances(app_name, sensors, location):
     app_info = AppDB.find_one({ 'app_name': app_name })
@@ -149,14 +161,34 @@ def get_sensor_instances(app_name, sensors, location):
         return {'status_code': 200, 'final_instances': list(final_instances)}
 
 
-def dockerize_app(app_name, location):
-    pass
+def get_controller_instances(app_name, controllers, location):
+    resp = req_sess.get(constants["BASE_URL"] + str(constants["PORT"]["CONTROLLER_PORT"]) + constants["ENDPOINTS"]["CONTROLLER_MANAGER"]["list_controller_info_by_loc"], json={ 'location': location }).json()
+    controller_instance_list = resp["response"]
+    print(controller_instance_list)
+    final_instances = list()
+    for type in controllers:
+        added = False
+        for ctrl in controller_instance_list:
+            if added ==True:
+                break
+            if ctrl["ctrl_type"] == type:
+                for ins in ctrl["ctrl_instance_list"]:
+                    if ins["ctrl_instance_id"] not in final_instances:
+                        final_instances.append(ins["ctrl_instance_id"])
+                        added = True
+                        break
+
+    print(final_instances)
+    if len(final_instances) != len(controllers):
+        return {'status_code': 500, 'message': 'No controllers available'}
+    else:
+        return {'status_code': 200, 'final_instances': list(final_instances)}
 
 
-def generate_api_file(model_list, sensor_instances, location, folder, app_name):
+def generate_api_file(model_list, sensor_instances, controller_instances, location, folder, app_name):
 
-    print(model_list, sensor_instances, location, folder, app_name)
-    if (generate_api.generate_api(model_list, sensor_instances, location, folder, app_name)):
+    print(model_list, sensor_instances,controller_instances, location, folder, app_name)
+    if (generate_api.generate_api(model_list, sensor_instances, controller_instances, location, folder, app_name)):
         # dockerfile_generator.generate_docker_file(folder)
         # os.system('docker build -t '+ app_name + ':latest' + folder+'/Dockerfile')
         # os.system('docker save '+app_name+':latest | gzip > '+app_name+'_latest.tar.gz')
@@ -227,6 +259,7 @@ def deploy_app():
     if app == None:
         return jsonify({ "status_code": 500, "message": "App does not exist." })
     print(app)
+
     print("$$$$$$$$$$$$$$$$$$$$",app_name, app["sensors"], location)
     sensor_instances_list = get_sensor_instances(app_name, app['sensors'], location)
     print("####################",sensor_instances_list)
@@ -237,7 +270,17 @@ def deploy_app():
         })
     else:
         sensor_instances_list = sensor_instances_list["final_instances"]
-    app_inst_id = generate_api_file(app['models'], sensor_instances_list, location, os.getcwd(), app_name) # Make Folder and appname dynamic
+
+    controller_instances_list = get_controller_instances(app_name, app["controllers"], location)
+    if controller_instances_list['status_code'] == 500:
+        return jsonify({
+            "status_code": 500,
+            "message": controller_instances_list["message"]
+        })
+    else:
+        controller_instances_list = controller_instances_list["final_instances"]
+    
+    app_inst_id = generate_api_file(app['models'], sensor_instances_list, controller_instances_list, location, os.getcwd(), app_name) # Make Folder and appname dynamic
     print("********************",app_inst_id)
     # file_storage.download_file("Application_Package", app_name+'_latest.tar.gz', app_name+'.zip')
 
@@ -290,8 +333,7 @@ def get_available_resources():
 
     model_uri = constants["BASE_URL"] + str(constants["PORT"]["MODEL_PORT"]) + constants["ENDPOINTS"]["AI_MANAGER"]["get_model_list"]
     sensor_uri = constants["BASE_URL"] + str(constants["PORT"]["SENSOR_PORT"]) + constants["ENDPOINTS"]["SENSOR_MANAGER"]["sensor_info"]
-    
-    print(model_uri, sensor_uri)
+    controller_uri = constants["BASE_URL"] + str(constants["PORT"]["CONTROLLER_PORT"]) + constants["ENDPOINTS"]["CONTROLLER_MANAGER"]["get_controller_list"]
 
     model_list = req_sess.get(model_uri).json()
     resp["models"] = model_list
@@ -299,9 +341,10 @@ def get_available_resources():
     sensor_info_list = req_sess.get(sensor_uri).json()
     resp["sensors"] = sensor_info_list
 
-    print(resp)
-    #Controllers to be added later
+    controller_list = req_sess.get(controller_uri).json()
+    resp["controllers"] = controller_list
 
+    print(resp)
     return resp
 
 

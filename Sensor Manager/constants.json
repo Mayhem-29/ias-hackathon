@@ -11,7 +11,7 @@
         "SCH_PORT": "9600",
         "DEPLOYER_PORT": "9700",
         "AUTH_PORT": "9800",
-        "CTRL_PORT": "9900"
+        "CTRL_PORT": "9700"
     },
     "ENDPOINTS": {
         "AI_MANAGER": {

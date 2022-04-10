@@ -7,6 +7,17 @@
 
     </head>
 
+    <script>
+        function gotoController(){
+            urlParams = new URLSearchParams(window.location.search);
+            var jwt = urlParams.get('jwt');
+            console.log(jwt);
+
+            window.location.href = "{{ ctrl_url }}" + "?jwt=" + jwt;
+        }
+
+    </script>
+
     <style>
         *{
             font-family: Arial;
@@ -143,7 +154,7 @@
             </div>
             <div class="tab-container">
                 <div class="tab-item tab-selected">Sensor Manager</div>
-                <div class="tab-item" onclick="{{ ctrl_url }}">Controller Manager</div>
+                <div class="tab-item" onclick="javascript:gotoController()">Controller Manager</div>
             </div>
             <div class="sub-container">
                 <div class="title">Add Sensor Type</div>

@@ -7,6 +7,16 @@
 
     </head>
 
+    <script>
+        function gotoSensor(){
+            urlParams = new URLSearchParams(window.location.search);
+            var jwt = urlParams.get('jwt');
+            console.log(jwt);
+
+            window.location.href = "{{ sensor_url }}" + "?jwt=" + jwt;
+        }
+    </script>
+
     <style>
         *{
             font-family: Arial;
@@ -142,7 +152,7 @@
                 </div>
             </div>
             <div class="tab-container">
-                <div class="tab-item" onclick="{{ sensor_url }}">Sensor Manager</div>
+                <div class="tab-item" onclick="javascript:gotoSensor()">Sensor Manager</div>
                 <div class="tab-item tab-selected">Controller Manager</div>
             </div>
             <div class="sub-container">

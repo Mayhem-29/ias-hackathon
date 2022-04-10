@@ -1,6 +1,6 @@
 import json, os
 
-def generate_api(model_list, sensor_instances, location, folder, app_name):
+def generate_api(model_list, sensor_instances, controller_instances, location, folder, app_name):
     print(folder)
     try:
         constant_file = open("constants.json", "r")
@@ -8,9 +8,11 @@ def generate_api(model_list, sensor_instances, location, folder, app_name):
         constant_file.close()
         SENSOR_API = constants["BASE_URL"] + constants["PORT"]["APP_PORT"] + constants["ENDPOINTS"]["APP_MANAGER"]["get_sensor_data"]
         MODEL_API = constants["BASE_URL"] + constants["PORT"]["APP_PORT"] + constants["ENDPOINTS"]["APP_MANAGER"]["get_model_predict"]
+        CONTROLLER_API = constants["BASE_URL"] + constants["PORT"]["APP_PORT"] + constants["ENDPOINTS"]["APP_MANAGER"]["send_controller_message"]
 
         read_sensor_payload = '{ "sensor_instance_id": SENSOR_INSTANCE_LIST[idx] }'
         read_model_payload = '{ "model_name": MODEL_LIST[idx], "data": data }'
+        post_controller_payload = '{ "controller_instance_id": CONTROLLER_INSTANCE_LIST[idx], "data": data }'
         
         function_code = """
 import requests
@@ -18,13 +20,21 @@ import requests
 LOCATION = "{loc}"
 SENSOR_API = "{SENSOR_API}"
 MODEL_API = "{MODEL_API}"
+CONTROLLER_API = "{CONTROLLER_API}"
 
-SENSOR_INSTANCE_LIST = {sensor_ins_id}
+SENSOR_INSTANCE_LIST = {sensor_ins_ids}
 MODEL_LIST = {model_list}
+CONTROLLER_INSTANCE_LIST = {controller_ins_ids}
 
 def get_sensor_data(idx):
     payload = {sensor_payload}
     resp = requests.post(SENSOR_API, json=payload).json()
+    return resp["message"]
+
+
+def post_controller_message(idx, data):
+    payload = {controller_payload}
+    resp = requests.post(CONTROLLER_API, json=payload).json()
     return resp["message"]
 
 
@@ -43,12 +53,15 @@ def post_process(data):
 
         """.format(
             loc=location,
-            sensor_ins_id=sensor_instances,
+            sensor_ins_ids=sensor_instances,
+            controller_ins_ids=controller_instances,
             model_list=model_list,
             SENSOR_API=SENSOR_API,
             MODEL_API=MODEL_API,
+            CONTROLLER_API=CONTROLLER_API,
             sensor_payload=read_sensor_payload,
-            model_payload = read_model_payload
+            model_payload = read_model_payload,
+            controller_payload = post_controller_payload
         )
 
         path = folder + "/" + app_name
