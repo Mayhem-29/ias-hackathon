@@ -29,7 +29,7 @@ def init_controller():
         for ctrl_instance in ctrl_instance_list:
             os.system(f"""sshpass -p Yash@1998 ssh yash@localhost 
                 'gnome-terminal python3 controller_instance.py {ctrl_instance["_id"]}'
-            """
+            """)
 
 
 @app.route("/")
