@@ -1,7 +1,18 @@
 {
     "KAFKA_HOST_ADDR": "13.71.94.55:9092",
 
-    "BASE_URL": "http://localhost:",
+    "VM_MAPPING": {
+        "NOTIFICATION": "vm1",
+        "SENSOR": "vm1",
+        "MODEL": "vm1",
+        "LOAD": "vm1",
+        "APP": "vm1",
+        "NODE": "vm1",
+        "SCHEDULER": "vm1",
+        "AUTH": "vm1",
+        "CTRL": "vm1",
+        "DEPLOYER": "vm1"
+    },
     "PORT": {
         "NOTIFICATION_PORT": "9000",
         "SENSOR_PORT": "9100",
