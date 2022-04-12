@@ -71,8 +71,8 @@ def home():
     '''
     
     try:
-        # print(request.args['jwt'])
-        # token = request.args['jwt']
+        print(request.args['jwt'])
+        token = request.args['jwt']
         print("HI")
 
         # data = jwt.decode(token, app.config['SECRET_KEY'], algorithms='HS256')
