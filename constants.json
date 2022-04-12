@@ -10,7 +10,7 @@
         "NODE": "vm1",
         "SCHEDULER": "vm1",
         "AUTH": "vm1",
-        "CTRL": "vm1",
+        "CONTROLLER": "vm1",
         "DEPLOYER": "vm1"
     },
     "PORT": {
@@ -22,7 +22,7 @@
         "NODE_PORT": "9500",
         "SCHEDULER_PORT": "9600",
         "AUTH_PORT": "9800",
-        "CTRL_PORT": "9700",
+        "CONTROLLER_PORT": "9700",
         "DEPLOYER_PORT": "9900"
     },
     "ENDPOINTS": {

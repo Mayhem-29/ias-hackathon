@@ -6,7 +6,7 @@ the container name for specific module is passed as argument eg:/appmanager
 the scriptfile has all run commands to run the folder contents in order
 '''
 def generate_dockerfile(port,folder,file):
-    f=open("."+folder+"/Dockerfile","w")
+    f=open(folder+"/Dockerfile","w")
     destination="/app"
     f.write("FROM python:3\n")
     f.write("RUN  apt-get update\n\n")
