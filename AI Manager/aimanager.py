@@ -1,3 +1,4 @@
+from http import server
 from re import X
 from flask import Flask, jsonify, redirect, request, render_template
 from werkzeug.utils import secure_filename
@@ -40,6 +41,8 @@ def read_json(file_name):
         return json.load(f)
 
 constants = read_json("constants.json")
+
+servers = read_json("servers.json")
 
 def unzip_file(file_name,source_folder):
     '''
@@ -170,12 +173,12 @@ def hello():
         data = jwt.decode(token, app.config['SECRET_KEY'], algorithms='HS256')
         # print(data)
         return render_template('dataScientist.html',
-            upload_url = constants["BASE_URL"] + constants["PORT"]["MODEL_PORT"] + constants["ENDPOINTS"]["AI_MANAGER"]["dataScientist"],
-            home = constants["BASE_URL"] + constants["PORT"]["APP_PORT"] + constants["ENDPOINTS"]["APP_MANAGER"]["home"]
+            upload_url = servers[constants["VM_MAPPING"]["MODEL"]] + constants["PORT"]["MODEL_PORT"] + constants["ENDPOINTS"]["AI_MANAGER"]["dataScientist"],
+            home = servers[constants["VM_MAPPING"]["APP"]] + constants["PORT"]["APP_PORT"] + constants["ENDPOINTS"]["APP_MANAGER"]["home"]
         )
     except Exception as e:
         print(e)
-        return redirect(constants["BASE_URL"] + constants["PORT"]["APP_PORT"] + constants["ENDPOINTS"]["APP_MANAGER"]["home"])
+        return redirect(servers[constants["VM_MAPPING"]["APP"]] + constants["PORT"]["APP_PORT"] + constants["ENDPOINTS"]["APP_MANAGER"]["home"])
 
 
 
@@ -203,7 +206,7 @@ def upload():
       shutil.rmtree(source_folder)
       os.remove(f.filename)
       model_store(data)
-      return redirect (constants["BASE_URL"] + str(constants["PORT"]["APP_PORT"]) + constants["ENDPOINTS"]["APP_MANAGER"]["home"])   
+      return redirect (servers[constants["VM_MAPPING"]["APP"]] + str(constants["PORT"]["APP_PORT"]) + constants["ENDPOINTS"]["APP_MANAGER"]["home"])   
 
 if(__name__ == "__main__"):
     app.run(port=MODEL_PORT, debug=True)
