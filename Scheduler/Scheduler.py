@@ -9,6 +9,7 @@ import heapq
 from flask_cors import CORS, cross_origin
 
 
+
 app = Flask(__name__)
 
 """
@@ -19,52 +20,59 @@ mydb=myclient["Hackathon"]
 mycollection=mydb["Scheduler_db"]
 sess = requests.Session()
 
-SENSOR_PORT = 9100
-MODEL_PORT = 9200
-LOAD_PORT = 9300
-APP_PORT = 9400
-DEPLOYER_PORT = 9900
-NODE_PORT = 9500
-SCH_PORT = 9600
+# SENSOR_PORT = 9100
+# MODEL_PORT = 9200
+# LOAD_PORT = 9300
+# APP_PORT = 9400
+# DEPLOYER_PORT = 9900
+# NODE_PORT = 9500
+# SCH_PORT = 9600
 
 
 
-endpoint = {
-    "sensor_manager": {
-        "base_url": "http://localhost:"+str(SENSOR_PORT), 
-        "uri": {
-            "sensorinfo": "/sensorinfo",
-            "getsensordata": "/getsensordata"
-        }
-    },
-    "node_manager": {
-        "base_url": "http://localhost:" + str(NODE_PORT),
-        "uri": {
-            "get_schedule_app": "/get_schedule_app"
-        }
-    },
-    "load_balancer": {
-        "base_url": "http://localhost:" + str(LOAD_PORT),
-        "uri": {
-            "get_node_id": "/get_node_id"
-        }
-    },
-    "deployer": {
-        "base_url": "http://localhost:" + str(DEPLOYER_PORT),
-        "uri": {
-            "send_to_deployer": "/send_to_deployer",
-        }
-    },
-    "app_manager": {
-        "base_url": "http://localhost:" + str(APP_PORT),
-        "uri": {
-            "get_all_models_sensos": "/get_models_sensors",
-            "get_all_apps": "/get_all_applications",
-            "get_sensor_by_app_id": "/get_sensor_by_app_id",
-            "deploy_app": "/deploy"
-        }
-    },
-}
+# endpoint = {
+#     "sensor_manager": {
+#         "base_url": "http://localhost:"+str(SENSOR_PORT), 
+#         "uri": {
+#             "sensorinfo": "/sensorinfo",
+#             "getsensordata": "/getsensordata"
+#         }
+#     },
+#     "node_manager": {
+#         "base_url": "http://localhost:" + str(NODE_PORT),
+#         "uri": {
+#             "get_schedule_app": "/get_schedule_app"
+#         }
+#     },
+#     "load_balancer": {
+#         "base_url": "http://localhost:" + str(LOAD_PORT),
+#         "uri": {
+#             "get_node_id": "/get_node_id"
+#         }
+#     },
+#     "deployer": {
+#         "base_url": "http://localhost:" + str(DEPLOYER_PORT),
+#         "uri": {
+#             "send_to_deployer": "/send_to_deployer",
+#         }
+#     },
+#     "app_manager": {
+#         "base_url": "http://localhost:" + str(APP_PORT),
+#         "uri": {
+#             "get_all_models_sensos": "/get_models_sensors",
+#             "get_all_apps": "/get_all_applications",
+#             "get_sensor_by_app_id": "/get_sensor_by_app_id",
+#             "deploy_app": "/deploy"
+#         }
+#     },
+# }
+
+def read_json(file_name):
+    with open(file_name, "r") as f:
+        return json.load(f)
+
+constants = read_json("constants.json")
+servers=read_json("servers.json")
 
 
 Scheduler_queue=[]
@@ -109,7 +117,7 @@ def deployerApp(appInfo):
     deployer_obj["end_status"]=0
 
     # print("72...sending to node manager to deploy")
-    response=sess.post(endpoint['node_manager']['base_url'] + endpoint['node_manager']['uri']['get_schedule_app'],json=deployer_obj).json()
+    response=sess.post(servers[constants["VM_MAPPING"]["NODE"]]+constants["PORT"]["NODE_PORT"]+constants["ENDPOINTS"]["NODE_MANAGER"]["get_schedule_app"],json=deployer_obj).json()
 
     """
     1)response status = true
@@ -165,7 +173,8 @@ def termination_function():
             deployer_obj={}
             deployer_obj["app_inst_id"]=appInstId
             deployer_obj["end_status"]=1
-            response=sess.post(endpoint['node_manager']['base_url'] + endpoint['node_manager']['uri']['get_schedule_app'],json=deployer_obj).json()
+            response=sess.post(servers[constants["VM_MAPPING"]["NODE"]]+constants["PORT"]["NODE_PORT"]+constants["ENDPOINTS"]["NODE_MANAGER"]["get_schedule_app"],json=deployer_obj).json()
+            #response=sess.post(endpoint['node_manager']['base_url'] + endpoint['node_manager']['uri']['get_schedule_app'],json=deployer_obj).json()
             mycollection.delete_one({"app_inst_id": appInstId})
             print(response["message"]) #application killed or not
 
@@ -179,7 +188,7 @@ if __name__=="__main__":
     thread1.start()
     thread2.start()
 
-    app.run(port=SCH_PORT)
+    app.run(port=constants["PORT"]["NODE_PORT"])
 
     thread1.join()
     thread2.join()
