@@ -21,6 +21,7 @@ def read_json(file_name):
         return json.load(f)
 
 constants = read_json("constants.json")
+sensor = read_json("sensor.json")
 
 
 def init_controller():
@@ -35,10 +36,10 @@ def init_controller():
 @app.route("/")
 def hello_controller():
     return render_template("controller_home.html",
-        home = constants["BASE_URL"] + constants["PORT"]["APP_PORT"] + constants["ENDPOINTS"]["APP_MANAGER"]["home"],
-        add_ctrl_type_api = constants["BASE_URL"] + constants["PORT"]["CTRL_PORT"] + constants["ENDPOINTS"]["CONTROLLER_MANAGER"]["add_controller_type"],
-        add_ctrl_instance_api = constants["BASE_URL"] + constants["PORT"]["CTRL_PORT"] + constants["ENDPOINTS"]["CONTROLLER_MANAGER"]["add_controller_instance"],
-        sensor_url = constants["BASE_URL"] + constants["PORT"]["SENSOR_PORT"] + constants["ENDPOINTS"]["SENSOR_MANAGER"]["admin"],
+        home = server[constants["VM_MAPPING"]["APP"]] + constants["PORT"]["APP_PORT"] + constants["ENDPOINTS"]["APP_MANAGER"]["home"],
+        add_ctrl_type_api = server[constants["VM_MAPPING"]["CTRL"]] + constants["PORT"]["CTRL_PORT"] + constants["ENDPOINTS"]["CONTROLLER_MANAGER"]["add_controller_type"],
+        add_ctrl_instance_api = server[constants["VM_MAPPING"]["CTRL"]] + constants["PORT"]["CTRL_PORT"] + constants["ENDPOINTS"]["CONTROLLER_MANAGER"]["add_controller_instance"],
+        sensor_url = server[constants["VM_MAPPING"]["SENSOR"]] + constants["PORT"]["SENSOR_PORT"] + constants["ENDPOINTS"]["SENSOR_MANAGER"]["admin"],
     )
 
 
