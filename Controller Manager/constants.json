@@ -1,29 +1,17 @@
 {
     "KAFKA_HOST_ADDR": "13.71.94.55:9092",
 
-    "VM_MAPPING": {
-        "NOTIFICATION": "vm1",
-        "SENSOR": "vm1",
-        "MODEL": "vm1",
-        "LOAD": "vm1",
-        "APP": "vm1",
-        "NODE": "vm1",
-        "SCHEDULER": "vm1",
-        "AUTH": "vm1",
-        "CTRL": "vm1",
-        "DEPLOYER": "vm1"
-    },
+    "BASE_URL": "http://localhost:",
     "PORT": {
-        "NOTIFICATION_PORT": "9000",
         "SENSOR_PORT": "9100",
         "MODEL_PORT": "9200",
         "LOAD_PORT": "9300",
         "APP_PORT": "9400",
         "NODE_PORT": "9500",
         "SCHEDULER_PORT": "9600",
+        "DEPLOYER_PORT": "9900",
         "AUTH_PORT": "9800",
-        "CTRL_PORT": "9700",
-        "DEPLOYER_PORT": "9900"
+        "CTRL_PORT": "9700"
     },
     "ENDPOINTS": {
         "AI_MANAGER": {
@@ -66,22 +54,9 @@
             "get_controller_instance_list": "/get_controller_instance_list",
             "get_controller_instance_details_by_location": "/get_controller_instance_details_by_location",
             "controller_home": "/"
-        },
-        "NOTIFICATION_MANAGER": {
-            "send_email": "/send_email",
-            "send_sms": "/send_sms"
-        },
-        "NODE_MANAGER":{
-            "get_schedule_app": "/get_schedule_app"
-        },
-        "LOAD_MANAGER":{
-            "get_node_id": "/get_node_id"
-        },
-        "DEPLOYER_MANAGER":{
-            "send_to_deployer":"/send_to_deployer"
         }
     },
-    "LIST":["SENSOR","MODEL","APP","AUTH","DEPLOYER","NODE","LOAD","SCHEDULER", "CONTROLLER", "NOTIFICATION"],
+    "LIST":["SENSOR","MODEL","APP","AUTH","DEPLOYER","NODE","LOAD","SCHEDULER", "CONTROLLER"],
     "FILES":{
         "SENSOR_FILE": "sensor_manager.py",
         "MODEL_FILE": "aimanager.py",
@@ -91,7 +66,6 @@
         "NODE_FILE": "NodeManager.py",
         "LOAD_FILE" : "LoadBalancer.py",
         "SCHEDULER_FILE": "Scheduler.py",
-        "CONTROLLER_FILE": "controller_manager.py",
-        "NOTIFICATION_FILE": "notification_manager.py"
+        "CONTROLLER_FILE": "controller_manager.py"
     }
 }

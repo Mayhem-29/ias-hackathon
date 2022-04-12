@@ -70,15 +70,6 @@
         "NOTIFICATION_MANAGER": {
             "send_email": "/send_email",
             "send_sms": "/send_sms"
-        },
-        "NODE_MANAGER":{
-            "get_schedule_app": "/get_schedule_app"
-        },
-        "LOAD_MANAGER":{
-            "get_node_id": "/get_node_id"
-        },
-        "DEPLOYER_MANAGER":{
-            "send_to_deployer":"/send_to_deployer"
         }
     },
     "LIST":["SENSOR","MODEL","APP","AUTH","DEPLOYER","NODE","LOAD","SCHEDULER", "CONTROLLER", "NOTIFICATION"],

@@ -48,9 +48,7 @@ def unzip_file(file_name,source_folder):
     with zipfile.ZipFile(file_name, 'r') as zip_ref:
         zip_ref.extractall(source_folder)
 
-@app.route("/model", methods=['POST'])
-def model_store_in_database():
-    req = request.get_json()
+def model_store_in_database(req):
     myquery = {"model_name":req["model_name"]}
     response = collection.find(myquery)
 
@@ -150,10 +148,7 @@ def model_store(data):
         "output_format": output_format,
         "model_description":model_description
     }
-    response = req_sess.post(
-        "http://localhost:" + str(MODEL_PORT) + "/model",
-        json=request_dict).content
-    response = response.decode('ascii')
+    response = model_store_in_database(request_dict)
     print(response)
 
 def savefilestoazure(zip_file,model_name):
@@ -175,7 +170,8 @@ def hello():
         data = jwt.decode(token, app.config['SECRET_KEY'], algorithms='HS256')
         # print(data)
         return render_template('dataScientist.html',
-            upload_url = constants["BASE_URL"] + constants["PORT"]["MODEL_PORT"] + constants["ENDPOINTS"]["AI_MANAGER"]["dataScientist"]
+            upload_url = constants["BASE_URL"] + constants["PORT"]["MODEL_PORT"] + constants["ENDPOINTS"]["AI_MANAGER"]["dataScientist"],
+            home = constants["BASE_URL"] + constants["PORT"]["APP_PORT"] + constants["ENDPOINTS"]["APP_MANAGER"]["home"]
         )
     except Exception as e:
         print(e)

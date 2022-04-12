@@ -48,6 +48,8 @@ def read_json(file_name):
         return json.load(f)
 
 constants = read_json("constants.json")
+server = read_json("server.json")
+
 
 def unzip_file(file_name,source_folder):
     '''
@@ -61,12 +63,12 @@ def unzip_file(file_name,source_folder):
 @cross_origin()
 def hello():
     return render_template("landing_page.html", 
-        login=constants["BASE_URL"] + str(constants["PORT"]["AUTH_PORT"]) + constants["ENDPOINTS"]["AUTH_MANAGER"]["login"],
-        register=constants["BASE_URL"] + str(constants["PORT"]["AUTH_PORT"]) + constants["ENDPOINTS"]["AUTH_MANAGER"]["register"],
-        data_scientist=constants["BASE_URL"] + str(constants["PORT"]["MODEL_PORT"]) + constants["ENDPOINTS"]["AI_MANAGER"]["ai_home"],
-        admin=constants["BASE_URL"] + str(constants["PORT"]["SENSOR_PORT"]) + constants["ENDPOINTS"]["SENSOR_MANAGER"]["admin"],
-        developer=constants["BASE_URL"] + str(constants["PORT"]["APP_PORT"]) + constants["ENDPOINTS"]["APP_MANAGER"]["developer"],
-        user=constants["BASE_URL"] + str(constants["PORT"]["APP_PORT"]) + constants["ENDPOINTS"]["APP_MANAGER"]["user"],
+        login=server[constants["VM_MAPPING"]["AUTH"]] + str(constants["PORT"]["AUTH_PORT"]) + constants["ENDPOINTS"]["AUTH_MANAGER"]["login"],
+        register=server[constants["VM_MAPPING"]["AUTH"]] + str(constants["PORT"]["AUTH_PORT"]) + constants["ENDPOINTS"]["AUTH_MANAGER"]["register"],
+        data_scientist=server[constants["VM_MAPPING"]["MODEL"]] + str(constants["PORT"]["MODEL_PORT"]) + constants["ENDPOINTS"]["AI_MANAGER"]["ai_home"],
+        admin=server[constants["VM_MAPPING"]["SENSOR"]] + str(constants["PORT"]["SENSOR_PORT"]) + constants["ENDPOINTS"]["SENSOR_MANAGER"]["admin"],
+        developer=server[constants["VM_MAPPING"]["APP"]] + str(constants["PORT"]["APP_PORT"]) + constants["ENDPOINTS"]["APP_MANAGER"]["developer"],
+        user=server[constants["VM_MAPPING"]["APP"]] + str(constants["PORT"]["APP_PORT"]) + constants["ENDPOINTS"]["APP_MANAGER"]["user"],
     )
 
 
@@ -77,7 +79,7 @@ def dev():
         token = request.args['jwt']
         data = jwt.decode(token, app.config['SECRET_KEY'], algorithms='HS256')
         return render_template("appdeveloper.html",
-            home=constants["BASE_URL"] + str(constants["PORT"]["APP_PORT"]) + constants["ENDPOINTS"]["APP_MANAGER"]["home"]
+            home=server[constants["VM_MAPPING"]["APP"]] + str(constants["PORT"]["APP_PORT"]) + constants["ENDPOINTS"]["APP_MANAGER"]["home"]
         )
     except:
         return redirect("/")
@@ -91,7 +93,7 @@ def enduser():
         token = request.args['jwt']
         data = jwt.decode(token, app.config['SECRET_KEY'], algorithms='HS256')
         return render_template("enduser.html",
-        home=constants["BASE_URL"] + str(constants["PORT"]["APP_PORT"]) + constants["ENDPOINTS"]["APP_MANAGER"]["home"]
+            home=server[constants["VM_MAPPING"]["APP"]] + str(constants["PORT"]["APP_PORT"]) + constants["ENDPOINTS"]["APP_MANAGER"]["home"]
         )
     except:
         return redirect("/")
@@ -115,15 +117,27 @@ def get_sensor_data():
 @app.route("/get_model_predict", methods=["POST"])
 def get_model_predict():
     req = request.get_json()
-    resp = requests.post(constants["BASE_URL"] + str(constants["PORT"]["MODEL_PORT"]) + constants["ENDPOINTS"]["AI_MANAGER"]["get_prediction"], json=req).json()
+    resp = requests.post(server[constants["VM_MAPPING"]["MODEL"]] + str(constants["PORT"]["MODEL_PORT"]) + constants["ENDPOINTS"]["AI_MANAGER"]["get_prediction"], json=req).json()
     return resp
 
 
-##################### Code Clean up ###############
+@app.route("/send_controller_message", methods=["POST"])
+def send_controller_message():
+    try:
+        print("Sending data to controller")
+        req = request.get_json()
+        print(req)
+        kafka_util.send_to_topic(req["controller_instance_id"], req["data"])
+        return jsonify({"message" : "Successfully sent the message", "status_code" : 200}), 200
+    except Exception as e:
+        print(e)
+        return jsonify({"message" : "Failed to send the message", "status_code" : 500}), 500
+
+
 
 def get_sensor_instances(app_name, sensors, location):
     app_info = AppDB.find_one({ 'app_name': app_name })
-    sensors_list = req_sess.get(constants["BASE_URL"] + str(constants["PORT"]["SENSOR_PORT"]) + constants["ENDPOINTS"]["SENSOR_MANAGER"]["list_sensor_info_by_loc"]).json()
+    sensors_list = req_sess.get(server[constants["VM_MAPPING"]["SENSOR"]] + str(constants["PORT"]["SENSOR_PORT"]) + constants["ENDPOINTS"]["SENSOR_MANAGER"]["list_sensor_info_by_loc"]).json()
     print(sensors_list)
     sensor_instance_list = list()
     final_instances = set()
@@ -149,14 +163,34 @@ def get_sensor_instances(app_name, sensors, location):
         return {'status_code': 200, 'final_instances': list(final_instances)}
 
 
-def dockerize_app(app_name, location):
-    pass
+def get_controller_instances(app_name, controllers, location):
+    resp = req_sess.get(server[constants["VM_MAPPING"]["CTRL"]] + str(constants["PORT"]["CONTROLLER_PORT"]) + constants["ENDPOINTS"]["CONTROLLER_MANAGER"]["list_controller_info_by_loc"], json={ 'location': location }).json()
+    controller_instance_list = resp["response"]
+    print(controller_instance_list)
+    final_instances = list()
+    for type in controllers:
+        added = False
+        for ctrl in controller_instance_list:
+            if added ==True:
+                break
+            if ctrl["ctrl_type"] == type:
+                for ins in ctrl["ctrl_instance_list"]:
+                    if ins["ctrl_instance_id"] not in final_instances:
+                        final_instances.append(ins["ctrl_instance_id"])
+                        added = True
+                        break
+
+    print(final_instances)
+    if len(final_instances) != len(controllers):
+        return {'status_code': 500, 'message': 'No controllers available'}
+    else:
+        return {'status_code': 200, 'final_instances': list(final_instances)}
 
 
-def generate_api_file(model_list, sensor_instances, location, folder, app_name):
+def generate_api_file(model_list, sensor_instances, controller_instances, location, folder, app_name):
 
-    print(model_list, sensor_instances, location, folder, app_name)
-    if (generate_api.generate_api(model_list, sensor_instances, location, folder, app_name)):
+    print(model_list, sensor_instances,controller_instances, location, folder, app_name)
+    if (generate_api.generate_api(model_list, sensor_instances, controller_instances, location, folder, app_name)):
         # dockerfile_generator.generate_docker_file(folder)
         # os.system('docker build -t '+ app_name + ':latest' + folder+'/Dockerfile')
         # os.system('docker save '+app_name+':latest | gzip > '+app_name+'_latest.tar.gz')
@@ -227,6 +261,7 @@ def deploy_app():
     if app == None:
         return jsonify({ "status_code": 500, "message": "App does not exist." })
     print(app)
+
     print("$$$$$$$$$$$$$$$$$$$$",app_name, app["sensors"], location)
     sensor_instances_list = get_sensor_instances(app_name, app['sensors'], location)
     print("####################",sensor_instances_list)
@@ -237,7 +272,17 @@ def deploy_app():
         })
     else:
         sensor_instances_list = sensor_instances_list["final_instances"]
-    app_inst_id = generate_api_file(app['models'], sensor_instances_list, location, os.getcwd(), app_name) # Make Folder and appname dynamic
+
+    controller_instances_list = get_controller_instances(app_name, app["controllers"], location)
+    if controller_instances_list['status_code'] == 500:
+        return jsonify({
+            "status_code": 500,
+            "message": controller_instances_list["message"]
+        })
+    else:
+        controller_instances_list = controller_instances_list["final_instances"]
+    
+    app_inst_id = generate_api_file(app['models'], sensor_instances_list, controller_instances_list, location, os.getcwd(), app_name) # Make Folder and appname dynamic
     print("********************",app_inst_id)
     # file_storage.download_file("Application_Package", app_name+'_latest.tar.gz', app_name+'.zip')
 
@@ -269,7 +314,7 @@ def deploy_app():
         "stand_alone": standalone #bool
     }
     #change with kafka
-    response = req_sess.post(constants["BASE_URL"] + str(constants["PORT"]["SCH_PORT"]) + constants["ENDPOINTS"]["SCHEDULER_MANAGER"]["deploy_app"], json=payload) 
+    response = req_sess.post(server[constants["VM_MAPPING"]["SCHEDULER"]] + str(constants["PORT"]["SCH_PORT"]) + constants["ENDPOINTS"]["SCHEDULER_MANAGER"]["deploy_app"], json=payload) 
     return {
         "status_code": 200,
         "message": response.text
@@ -288,10 +333,9 @@ def get_available_resources():
         # "controllers": list()
     }
 
-    model_uri = constants["BASE_URL"] + str(constants["PORT"]["MODEL_PORT"]) + constants["ENDPOINTS"]["AI_MANAGER"]["get_model_list"]
-    sensor_uri = constants["BASE_URL"] + str(constants["PORT"]["SENSOR_PORT"]) + constants["ENDPOINTS"]["SENSOR_MANAGER"]["sensor_info"]
-    
-    print(model_uri, sensor_uri)
+    model_uri = server[constants["VM_MAPPING"]["MODEL"]] + str(constants["PORT"]["MODEL_PORT"]) + constants["ENDPOINTS"]["AI_MANAGER"]["get_model_list"]
+    sensor_uri = server[constants["VM_MAPPING"]["SENSOR"]] + str(constants["PORT"]["SENSOR_PORT"]) + constants["ENDPOINTS"]["SENSOR_MANAGER"]["sensor_info"]
+    controller_uri = server[constants["VM_MAPPING"]["CTRL"]] + str(constants["PORT"]["CONTROLLER_PORT"]) + constants["ENDPOINTS"]["CONTROLLER_MANAGER"]["get_controller_list"]
 
     model_list = req_sess.get(model_uri).json()
     resp["models"] = model_list
@@ -299,9 +343,10 @@ def get_available_resources():
     sensor_info_list = req_sess.get(sensor_uri).json()
     resp["sensors"] = sensor_info_list
 
-    print(resp)
-    #Controllers to be added later
+    controller_list = req_sess.get(controller_uri).json()
+    resp["controllers"] = controller_list
 
+    print(resp)
     return resp
 
 
@@ -337,7 +382,7 @@ def upload_application():
 
         config = azv.validate_zip(file.filename)
 
-        model_uri = constants["BASE_URL"] + str(constants["PORT"]["APP_PORT"]) + constants["ENDPOINTS"]["APP_MANAGER"]["get_app_list"]
+        model_uri = server[constants["VM_MAPPING"]["APP"]] + str(constants["PORT"]["APP_PORT"]) + constants["ENDPOINTS"]["APP_MANAGER"]["get_app_list"]
         existing_app_list = req_sess.get(model_uri).json()
 
         print(existing_app_list)
@@ -378,7 +423,7 @@ def upload_application():
     else:
         resp = {"status_code":400, 'message': 'Allowed file types are zip'}
     os.remove(file.filename)
-    return redirect (constants["BASE_URL"] + str(constants["PORT"]["APP_PORT"]) + constants["ENDPOINTS"]["APP_MANAGER"]["home"])
+    return redirect (server[constants["VM_MAPPING"]["APP"]] + str(constants["PORT"]["APP_PORT"]) + constants["ENDPOINTS"]["APP_MANAGER"]["home"])
 
 
 if(__name__ == "__main__"):
