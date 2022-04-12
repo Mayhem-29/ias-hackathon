@@ -5,6 +5,9 @@ import time
 import threading
 import os
 import pymongo
+import jwt
+from flask_cors import CORS, cross_origin
+
 # from init_sensor import *
 from kafka_fun import *
 CONST=""
@@ -61,13 +64,32 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = "sensor_manager"
 
 @app.route("/")
+@cross_origin()
 def home():
     '''
     Loads Html which contains forms for Adding and Deleting Sensor Instances.
     '''
     
+    try:
+        print(request.args['jwt'])
+        token = request.args['jwt']
+        print("HI")
+
+        # data = jwt.decode(token, app.config['SECRET_KEY'], algorithms='HS256')
+        # print(data)
+        return render_template("installsensor.html",
+            home=SERV[CONST["VM_MAPPING"]["APP"]] + str(CONST["PORT"]["APP_PORT"]) + CONST["ENDPOINTS"]["APP_MANAGER"]["home"],
+            ctrl_url = SERV[CONST["VM_MAPPING"]["CTRL"]] + str(CONST["PORT"]["CTRL_PORT"]) + CONST["ENDPOINTS"]["CONTROLLER_MANAGER"]["controller_home"],
+            hit_install_type = SERV[CONST["VM_MAPPING"]["SENSOR"]] + str(CONST["PORT"]["SENSOR_PORT"]) + "/install_sensortype",
+            hit_install_ins = SERV[CONST["VM_MAPPING"]["SENSOR"]] + str(CONST["PORT"]["SENSOR_PORT"]) + "/install_sensorins"
+        )
+    except:
+        return redirect(SERV[CONST["VM_MAPPING"]["APP"]] + CONST["PORT"]["APP_PORT"] + CONST["ENDPOINTS"]["APP_MANAGER"]["home"])
+    
+
+
     #type_info.insert_one({"_id":0, "user_name":"Soumi"})
-    return render_template("installsensor.html")
+    # return render_template("installsensor.html")
     # return {"Sensor_manager":"IAS"}
 
 
@@ -118,7 +140,7 @@ def install_sensortype():
                 type_info.insert_one({"sensor_type":sensor_type, "output_type":output_type})
                 ans = {"response":"New Sensor Type Installed Successfully"}
 
-    return ans 
+    return redirect("/", type_status = ans)
 
 
 
@@ -222,7 +244,7 @@ def install_sensorins():
             
             
              
-    return redirect("/")
+    return redirect("/", ins_status = ans)
      
     # redirect('/installsensor')            
 
@@ -506,7 +528,7 @@ if(__name__ == "__main__"):
     
     initi()
 
-    print(SERV[CONST["VM_MAPPING"]["SENSOR"]])
+    # print(SERV[CONST["VM_MAPPING"]["SENSOR"]])
 
     app.run(host="0.0.0.0",port=CONST["PORT"]["SENSOR_PORT"], debug = False)
     
