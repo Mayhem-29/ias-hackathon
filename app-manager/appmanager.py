@@ -164,7 +164,7 @@ def get_sensor_instances(app_name, sensors, location):
 
 
 def get_controller_instances(app_name, controllers, location):
-    resp = req_sess.get(servers[constants["VM_MAPPING"]["CTRL"]] + str(constants["PORT"]["CONTROLLER_PORT"]) + constants["ENDPOINTS"]["CONTROLLER_MANAGER"]["list_controller_info_by_loc"], json={ 'location': location }).json()
+    resp = req_sess.get(servers[constants["VM_MAPPING"]["CONTROLLER"]] + str(constants["PORT"]["CONTROLLER_PORT"]) + constants["ENDPOINTS"]["CONTROLLER_MANAGER"]["list_controller_info_by_loc"], json={ 'location': location }).json()
     controller_instance_list = resp["response"]
     print(controller_instance_list)
     final_instances = list()
@@ -335,7 +335,7 @@ def get_available_resources():
 
     model_uri = servers[constants["VM_MAPPING"]["MODEL"]] + str(constants["PORT"]["MODEL_PORT"]) + constants["ENDPOINTS"]["AI_MANAGER"]["get_model_list"]
     sensor_uri = servers[constants["VM_MAPPING"]["SENSOR"]] + str(constants["PORT"]["SENSOR_PORT"]) + constants["ENDPOINTS"]["SENSOR_MANAGER"]["sensor_info"]
-    controller_uri = servers[constants["VM_MAPPING"]["CTRL"]] + str(constants["PORT"]["CONTROLLER_PORT"]) + constants["ENDPOINTS"]["CONTROLLER_MANAGER"]["get_controller_list"]
+    controller_uri = servers[constants["VM_MAPPING"]["CONTROLLER"]] + str(constants["PORT"]["CONTROLLER_PORT"]) + constants["ENDPOINTS"]["CONTROLLER_MANAGER"]["get_controller_list"]
 
     model_list = req_sess.get(model_uri).json()
     resp["models"] = model_list

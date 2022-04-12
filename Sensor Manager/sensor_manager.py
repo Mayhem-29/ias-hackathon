@@ -156,7 +156,7 @@ def home():
         # print(data)
         return render_template("installsensor.html",
             home=constants["BASE_URL"] + str(constants["PORT"]["APP_PORT"]) + constants["ENDPOINTS"]["APP_MANAGER"]["home"],
-            ctrl_url = constants["BASE_URL"] + str(constants["PORT"]["CTRL_PORT"]) + constants["ENDPOINTS"]["CONTROLLER_MANAGER"]["controller_home"],
+            ctrl_url = constants["BASE_URL"] + str(constants["PORT"]["CONTROLLER_PORT"]) + constants["ENDPOINTS"]["CONTROLLER_MANAGER"]["controller_home"],
         )
     except:
         return redirect(constants["BASE_URL"] + constants["PORT"]["APP_PORT"] + constants["ENDPOINTS"]["APP_MANAGER"]["home"])
