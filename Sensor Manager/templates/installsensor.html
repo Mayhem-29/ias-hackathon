@@ -156,6 +156,7 @@
                 <div class="tab-item tab-selected">Sensor Manager</div>
                 <div class="tab-item" onclick="javascript:gotoController()">Controller Manager</div>
             </div>
+            <p style="color: blue; font-weight: bold;">{{ type_status }}</p>
             <div class="sub-container">
                 <div class="title">Add Sensor Type</div>   
                 <!-- http://localhost:9100/install_sensortype -->
@@ -173,8 +174,8 @@
                     </div>
                 </form>
             </div>
-            <p style="color: yellow;">{{ type_status }}</p>
             <hr>
+            <p style="color: blue; font-weight: bold;">{{ ins_status }}</p>
             <div class="sub-container">
                 <div class="title">Add Sensor Instance</div>
                 <!-- http://localhost:9100/install_sensorins -->
@@ -200,7 +201,6 @@
                     </div>
                 </form>
             </div>
-            <p style="color: yellow;">{{ ins_status }}</p>
         </div>
     </body>
     <footer>

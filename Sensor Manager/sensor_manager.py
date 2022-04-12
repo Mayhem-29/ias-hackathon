@@ -71,8 +71,8 @@ def home():
     '''
     
     try:
-        print(request.args['jwt'])
-        token = request.args['jwt']
+        # print(request.args['jwt'])
+        # token = request.args['jwt']
         print("HI")
 
         # data = jwt.decode(token, app.config['SECRET_KEY'], algorithms='HS256')
@@ -108,7 +108,7 @@ def is_sensor_manager_alive():
     return  {"status":"yes"}
 
 
-@app.route('/install_sensortype')
+@app.route('/install_sensortype',methods=["POST"])
 def install_sensortype():
     '''
     Add Sensor type by Platform Admin
@@ -128,19 +128,26 @@ def install_sensortype():
             alldata.append(i)
         
         
-        ans = {"response":"Given Sensor Type Alreaded Present"}
+        ans = "Given Sensor Type Alreaded Present"
 
 
         if(len(alldata)==0):
             #model = type_info(sensor_type=sensor_type,output_type=output_type)
 
             if(output_type != "array" and output_type != "int" and output_type != "float" ):
-                ans = {"response":"Invalid Output Type"}
+                ans = "Invalid Output Type"
             else:
                 type_info.insert_one({"sensor_type":sensor_type, "output_type":output_type})
-                ans = {"response":"New Sensor Type Installed Successfully"}
+                ans = "New Sensor Type Installed Successfully"
 
-    return redirect("/", type_status = ans)
+    # return redirect("/")
+    return render_template("installsensor.html",
+            home=SERV[CONST["VM_MAPPING"]["APP"]] + str(CONST["PORT"]["APP_PORT"]) + CONST["ENDPOINTS"]["APP_MANAGER"]["home"],
+            ctrl_url = SERV[CONST["VM_MAPPING"]["CTRL"]] + str(CONST["PORT"]["CTRL_PORT"]) + CONST["ENDPOINTS"]["CONTROLLER_MANAGER"]["controller_home"],
+            hit_install_type = SERV[CONST["VM_MAPPING"]["SENSOR"]] + str(CONST["PORT"]["SENSOR_PORT"]) + "/install_sensortype",
+            hit_install_ins = SERV[CONST["VM_MAPPING"]["SENSOR"]] + str(CONST["PORT"]["SENSOR_PORT"]) + "/install_sensorins",
+            type_status = ans
+        )
 
 
 
@@ -201,7 +208,7 @@ def install_sensorins():
         # location=resp["location"]
         # sensor_ip=resp["sensor_ip"]
         # sensor_port=resp["sensor_port"]
-        ans = {"response":"New Sensor Instance Installed Successfully"}
+        ans = "New Sensor Instance Installed Successfully"
         q1={"sensor_type": sensor_type}
         mdl=type_info.find(q1)
         flag=0
@@ -240,11 +247,18 @@ def install_sensorins():
 
             os.system("python3 sensor_generator.py "+str(ins_id)+" "+str(d_type))
         else:
-            ans = {"response":"Invalid Sensor Type"}
+            ans = "Invalid Sensor Type"
             
             
              
-    return redirect("/", ins_status = ans)
+    # return redirect("/")
+    return render_template("installsensor.html",
+            home=SERV[CONST["VM_MAPPING"]["APP"]] + str(CONST["PORT"]["APP_PORT"]) + CONST["ENDPOINTS"]["APP_MANAGER"]["home"],
+            ctrl_url = SERV[CONST["VM_MAPPING"]["CTRL"]] + str(CONST["PORT"]["CTRL_PORT"]) + CONST["ENDPOINTS"]["CONTROLLER_MANAGER"]["controller_home"],
+            hit_install_type = SERV[CONST["VM_MAPPING"]["SENSOR"]] + str(CONST["PORT"]["SENSOR_PORT"]) + "/install_sensortype",
+            hit_install_ins = SERV[CONST["VM_MAPPING"]["SENSOR"]] + str(CONST["PORT"]["SENSOR_PORT"]) + "/install_sensorins",
+            ins_status = ans
+        )
      
     # redirect('/installsensor')            
 
@@ -529,6 +543,6 @@ if(__name__ == "__main__"):
     initi()
 
     # print(SERV[CONST["VM_MAPPING"]["SENSOR"]])
-
+    # host="0.0.0.0",
     app.run(host="0.0.0.0",port=CONST["PORT"]["SENSOR_PORT"], debug = False)
     
