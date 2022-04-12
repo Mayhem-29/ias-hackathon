@@ -26,7 +26,7 @@ def read_json(file_name):
         return json.load(f)
 
 constants = read_json("constants.json")
-server = read_json("server.json")
+servers = read_json("servers.json")
 
 @app.route("/register", methods=["POST"])
 @cross_origin()
@@ -82,7 +82,7 @@ def logout():
     print(request.args['jwt'])
     token = request.args['jwt']
     data = jwt.decode(token, app.config['SECRET_KEY'], algorithms='HS256')
-    return redirect(server[constants["VM_MAPPING"]["APP"]] + constants["PORT"]["APP_PORT"] + constants["ENDPOINTS"]["APP_MANAGER"]["home"])
+    return redirect(servers[constants["VM_MAPPING"]["APP"]] + constants["PORT"]["APP_PORT"] + constants["ENDPOINTS"]["APP_MANAGER"]["home"])
 
 
 if __name__ == "__main__":

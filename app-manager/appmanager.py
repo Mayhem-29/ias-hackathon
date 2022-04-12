@@ -48,7 +48,7 @@ def read_json(file_name):
         return json.load(f)
 
 constants = read_json("constants.json")
-server = read_json("server.json")
+servers = read_json("servers.json")
 
 
 def unzip_file(file_name,source_folder):
@@ -63,12 +63,12 @@ def unzip_file(file_name,source_folder):
 @cross_origin()
 def hello():
     return render_template("landing_page.html", 
-        login=server[constants["VM_MAPPING"]["AUTH"]] + str(constants["PORT"]["AUTH_PORT"]) + constants["ENDPOINTS"]["AUTH_MANAGER"]["login"],
-        register=server[constants["VM_MAPPING"]["AUTH"]] + str(constants["PORT"]["AUTH_PORT"]) + constants["ENDPOINTS"]["AUTH_MANAGER"]["register"],
-        data_scientist=server[constants["VM_MAPPING"]["MODEL"]] + str(constants["PORT"]["MODEL_PORT"]) + constants["ENDPOINTS"]["AI_MANAGER"]["ai_home"],
-        admin=server[constants["VM_MAPPING"]["SENSOR"]] + str(constants["PORT"]["SENSOR_PORT"]) + constants["ENDPOINTS"]["SENSOR_MANAGER"]["admin"],
-        developer=server[constants["VM_MAPPING"]["APP"]] + str(constants["PORT"]["APP_PORT"]) + constants["ENDPOINTS"]["APP_MANAGER"]["developer"],
-        user=server[constants["VM_MAPPING"]["APP"]] + str(constants["PORT"]["APP_PORT"]) + constants["ENDPOINTS"]["APP_MANAGER"]["user"],
+        login=servers[constants["VM_MAPPING"]["AUTH"]] + str(constants["PORT"]["AUTH_PORT"]) + constants["ENDPOINTS"]["AUTH_MANAGER"]["login"],
+        register=servers[constants["VM_MAPPING"]["AUTH"]] + str(constants["PORT"]["AUTH_PORT"]) + constants["ENDPOINTS"]["AUTH_MANAGER"]["register"],
+        data_scientist=servers[constants["VM_MAPPING"]["MODEL"]] + str(constants["PORT"]["MODEL_PORT"]) + constants["ENDPOINTS"]["AI_MANAGER"]["ai_home"],
+        admin=servers[constants["VM_MAPPING"]["SENSOR"]] + str(constants["PORT"]["SENSOR_PORT"]) + constants["ENDPOINTS"]["SENSOR_MANAGER"]["admin"],
+        developer=servers[constants["VM_MAPPING"]["APP"]] + str(constants["PORT"]["APP_PORT"]) + constants["ENDPOINTS"]["APP_MANAGER"]["developer"],
+        user=servers[constants["VM_MAPPING"]["APP"]] + str(constants["PORT"]["APP_PORT"]) + constants["ENDPOINTS"]["APP_MANAGER"]["user"],
     )
 
 
@@ -79,7 +79,7 @@ def dev():
         token = request.args['jwt']
         data = jwt.decode(token, app.config['SECRET_KEY'], algorithms='HS256')
         return render_template("appdeveloper.html",
-            home=server[constants["VM_MAPPING"]["APP"]] + str(constants["PORT"]["APP_PORT"]) + constants["ENDPOINTS"]["APP_MANAGER"]["home"]
+            home=servers[constants["VM_MAPPING"]["APP"]] + str(constants["PORT"]["APP_PORT"]) + constants["ENDPOINTS"]["APP_MANAGER"]["home"]
         )
     except:
         return redirect("/")
@@ -93,7 +93,7 @@ def enduser():
         token = request.args['jwt']
         data = jwt.decode(token, app.config['SECRET_KEY'], algorithms='HS256')
         return render_template("enduser.html",
-            home=server[constants["VM_MAPPING"]["APP"]] + str(constants["PORT"]["APP_PORT"]) + constants["ENDPOINTS"]["APP_MANAGER"]["home"]
+            home=servers[constants["VM_MAPPING"]["APP"]] + str(constants["PORT"]["APP_PORT"]) + constants["ENDPOINTS"]["APP_MANAGER"]["home"]
         )
     except:
         return redirect("/")
@@ -117,7 +117,7 @@ def get_sensor_data():
 @app.route("/get_model_predict", methods=["POST"])
 def get_model_predict():
     req = request.get_json()
-    resp = requests.post(server[constants["VM_MAPPING"]["MODEL"]] + str(constants["PORT"]["MODEL_PORT"]) + constants["ENDPOINTS"]["AI_MANAGER"]["get_prediction"], json=req).json()
+    resp = requests.post(servers[constants["VM_MAPPING"]["MODEL"]] + str(constants["PORT"]["MODEL_PORT"]) + constants["ENDPOINTS"]["AI_MANAGER"]["get_prediction"], json=req).json()
     return resp
 
 
@@ -137,7 +137,7 @@ def send_controller_message():
 
 def get_sensor_instances(app_name, sensors, location):
     app_info = AppDB.find_one({ 'app_name': app_name })
-    sensors_list = req_sess.get(server[constants["VM_MAPPING"]["SENSOR"]] + str(constants["PORT"]["SENSOR_PORT"]) + constants["ENDPOINTS"]["SENSOR_MANAGER"]["list_sensor_info_by_loc"]).json()
+    sensors_list = req_sess.get(servers[constants["VM_MAPPING"]["SENSOR"]] + str(constants["PORT"]["SENSOR_PORT"]) + constants["ENDPOINTS"]["SENSOR_MANAGER"]["list_sensor_info_by_loc"]).json()
     print(sensors_list)
     sensor_instance_list = list()
     final_instances = set()
@@ -164,7 +164,7 @@ def get_sensor_instances(app_name, sensors, location):
 
 
 def get_controller_instances(app_name, controllers, location):
-    resp = req_sess.get(server[constants["VM_MAPPING"]["CTRL"]] + str(constants["PORT"]["CONTROLLER_PORT"]) + constants["ENDPOINTS"]["CONTROLLER_MANAGER"]["list_controller_info_by_loc"], json={ 'location': location }).json()
+    resp = req_sess.get(servers[constants["VM_MAPPING"]["CTRL"]] + str(constants["PORT"]["CONTROLLER_PORT"]) + constants["ENDPOINTS"]["CONTROLLER_MANAGER"]["list_controller_info_by_loc"], json={ 'location': location }).json()
     controller_instance_list = resp["response"]
     print(controller_instance_list)
     final_instances = list()
@@ -314,7 +314,7 @@ def deploy_app():
         "stand_alone": standalone #bool
     }
     #change with kafka
-    response = req_sess.post(server[constants["VM_MAPPING"]["SCHEDULER"]] + str(constants["PORT"]["SCH_PORT"]) + constants["ENDPOINTS"]["SCHEDULER_MANAGER"]["deploy_app"], json=payload) 
+    response = req_sess.post(servers[constants["VM_MAPPING"]["SCHEDULER"]] + str(constants["PORT"]["SCH_PORT"]) + constants["ENDPOINTS"]["SCHEDULER_MANAGER"]["deploy_app"], json=payload) 
     return {
         "status_code": 200,
         "message": response.text
@@ -333,9 +333,9 @@ def get_available_resources():
         # "controllers": list()
     }
 
-    model_uri = server[constants["VM_MAPPING"]["MODEL"]] + str(constants["PORT"]["MODEL_PORT"]) + constants["ENDPOINTS"]["AI_MANAGER"]["get_model_list"]
-    sensor_uri = server[constants["VM_MAPPING"]["SENSOR"]] + str(constants["PORT"]["SENSOR_PORT"]) + constants["ENDPOINTS"]["SENSOR_MANAGER"]["sensor_info"]
-    controller_uri = server[constants["VM_MAPPING"]["CTRL"]] + str(constants["PORT"]["CONTROLLER_PORT"]) + constants["ENDPOINTS"]["CONTROLLER_MANAGER"]["get_controller_list"]
+    model_uri = servers[constants["VM_MAPPING"]["MODEL"]] + str(constants["PORT"]["MODEL_PORT"]) + constants["ENDPOINTS"]["AI_MANAGER"]["get_model_list"]
+    sensor_uri = servers[constants["VM_MAPPING"]["SENSOR"]] + str(constants["PORT"]["SENSOR_PORT"]) + constants["ENDPOINTS"]["SENSOR_MANAGER"]["sensor_info"]
+    controller_uri = servers[constants["VM_MAPPING"]["CTRL"]] + str(constants["PORT"]["CONTROLLER_PORT"]) + constants["ENDPOINTS"]["CONTROLLER_MANAGER"]["get_controller_list"]
 
     model_list = req_sess.get(model_uri).json()
     resp["models"] = model_list
@@ -382,7 +382,7 @@ def upload_application():
 
         config = azv.validate_zip(file.filename)
 
-        model_uri = server[constants["VM_MAPPING"]["APP"]] + str(constants["PORT"]["APP_PORT"]) + constants["ENDPOINTS"]["APP_MANAGER"]["get_app_list"]
+        model_uri = servers[constants["VM_MAPPING"]["APP"]] + str(constants["PORT"]["APP_PORT"]) + constants["ENDPOINTS"]["APP_MANAGER"]["get_app_list"]
         existing_app_list = req_sess.get(model_uri).json()
 
         print(existing_app_list)
@@ -423,7 +423,7 @@ def upload_application():
     else:
         resp = {"status_code":400, 'message': 'Allowed file types are zip'}
     os.remove(file.filename)
-    return redirect (server[constants["VM_MAPPING"]["APP"]] + str(constants["PORT"]["APP_PORT"]) + constants["ENDPOINTS"]["APP_MANAGER"]["home"])
+    return redirect (servers[constants["VM_MAPPING"]["APP"]] + str(constants["PORT"]["APP_PORT"]) + constants["ENDPOINTS"]["APP_MANAGER"]["home"])
 
 
 if(__name__ == "__main__"):
