@@ -175,7 +175,8 @@ def hello():
         data = jwt.decode(token, app.config['SECRET_KEY'], algorithms='HS256')
         # print(data)
         return render_template('dataScientist.html',
-            upload_url = constants["BASE_URL"] + constants["PORT"]["MODEL_PORT"] + constants["ENDPOINTS"]["AI_MANAGER"]["dataScientist"]
+            upload_url = constants["BASE_URL"] + constants["PORT"]["MODEL_PORT"] + constants["ENDPOINTS"]["AI_MANAGER"]["dataScientist"],
+            home=constants["BASE_URL"] + str(constants["PORT"]["APP_PORT"]) + constants["ENDPOINTS"]["APP_MANAGER"]["home"]
         )
     except Exception as e:
         print(e)
