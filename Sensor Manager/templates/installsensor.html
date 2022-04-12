@@ -156,9 +156,11 @@
                 <div class="tab-item tab-selected">Sensor Manager</div>
                 <div class="tab-item" onclick="javascript:gotoController()">Controller Manager</div>
             </div>
+            <p style="color: blue; font-weight: bold;">{{ type_status }}</p>
             <div class="sub-container">
-                <div class="title">Add Sensor Type</div>
-                <form action = "http://localhost:9100/install_sensortype" method = "POST">
+                <div class="title">Add Sensor Type</div>   
+                <!-- http://localhost:9100/install_sensortype -->
+                <form action = "{{ hit_install_type }}" method = "POST">
                     <div class="form-control">
                         <label for="Sensor_Name">Sensor Type</label>
                         <input type="text" id="Sensor_Name" name="sensor_type">
@@ -173,9 +175,11 @@
                 </form>
             </div>
             <hr>
+            <p style="color: blue; font-weight: bold;">{{ ins_status }}</p>
             <div class="sub-container">
                 <div class="title">Add Sensor Instance</div>
-                <form action = "http://localhost:9100/install_sensorins" method = "POST">
+                <!-- http://localhost:9100/install_sensorins -->
+                <form action = "{{ hit_install_ins }}" method = "POST">
                     <div class="form-control">
                         <label for="sensor_type">Sensor Type</label>
                         <input type="text" id="sensor_type" name="sensor_type">

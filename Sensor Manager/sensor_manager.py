@@ -1,22 +1,21 @@
 from flask import Flask,render_template,request,redirect
 import random
 import json
-
 import time
 import threading
+import os
 import pymongo
-# from topics import * 
-from flask_cors import CORS, cross_origin
 import jwt
+from flask_cors import CORS, cross_origin
 
-from init_sensor import *
+# from init_sensor import *
+from kafka_fun import *
+CONST=""
+with open("constants.json","r") as f:
+    CONST = json.load(f)
 
-
-def read_json(file_name):
-    with open(file_name, "r") as f:
-        return json.load(f)
-
-constants = read_json("constants.json")
+with open("servers.json","r") as f:
+    SERV = json.load(f)
 
 
 ############################################## List of APIs #######################################################
@@ -45,122 +44,58 @@ type_info = db["sensor_type_info"]
 ins_info = db["sensor_instance_info"]
 
 
-
-
-
-
-# ***************************************** Kafka *********************************************************
-
-from kafka.admin import KafkaAdminClient, NewTopic
-from kafka.consumer import KafkaConsumer
-from kafka import KafkaProducer
-
-IP_ADDR = constants["KAFKA_HOST_ADDR"]
-
-def serialize(msg):
-        return json.dumps(msg).encode('utf-8')
-
-
-producer = KafkaProducer(
-    bootstrap_servers = [IP_ADDR],
-    value_serializer = serialize
-)
-
-client = KafkaAdminClient(
-    bootstrap_servers = [IP_ADDR]
-)
-
-def create_topic(topic_name):
-
-    topics = list()
-    try:
-        topics.append(NewTopic(name=topic_name, num_partitions=1, replication_factor=1))
-        client.create_topics(topics)
-        print("Topic created sucessfully")
-        return True
-    except:
-        print("Something went wrong")
-        return False
-
-def data_producer(topic,data_type,fg):
-    
-    if(fg==1):
-        create_topic(topic)
-    
-    producer = KafkaProducer(
-        bootstrap_servers = [IP_ADDR],
-
-        value_serializer = serialize
-    )
-    if(data_type=="int"):
-        while True:
-            msg = random.randint(10,10000)
-            producer.send(topic,msg)
-            # print("Producer : ", msg)
-            # time.sleep(1)
-
-    elif(data_type == "float"):
-        while True:
-            msg = int(random.random()*100)/100
-            producer.send(topic,msg)
-            # print("Producer : ", msg)
-            # time.sleep(1)
-
-    elif(data_type=='array'):
-        while True:
-            f=open("data.json")
-            data = json.load(f)
-            i = random.randint(0,4)
-            msg=data[str(i)]
-            producer.send(topic,msg)
-            # print("Producer : ", msg)
-            # time.sleep(1)
-
-
-
-admin_client = KafkaAdminClient(
-    bootstrap_servers = [IP_ADDR]
-)     
-
-
-# ********************************************** INIT Kafka  *******************************************************
-
-
-
-
-
-
 ############################################################################################################
+
+def initi():
+    all = ins_info.find()
+    for i in all:
+        topic_n = str(i["_id"])
+        # os.system("gnome-terminal -x python3 Sensors/" + topic_n+"_sensor.py")
+
+        os.system("gnome-terminal --title=" +topic_n +" -x python3 " + "Sensors/"+topic_n+"_sensor.py")
+
+
+
+
+#########################################################################################################
 
 
 app = Flask(__name__)
-cors = CORS(app)
-# app.config['SECRET_KEY'] = "sensor_manager"
-app.config['SECRET_KEY'] = "dub_nation"
-def generateint():
-    return random.randint(10,10000)
-
-def generatefloat():
-    return int(random.random()*100)/100
-
-
+app.config['SECRET_KEY'] = "sensor_manager"
 
 @app.route("/")
 @cross_origin()
 def home():
+    '''
+    Loads Html which contains forms for Adding and Deleting Sensor Instances.
+    '''
+    
     try:
         print(request.args['jwt'])
         token = request.args['jwt']
         print("HI")
+
         # data = jwt.decode(token, app.config['SECRET_KEY'], algorithms='HS256')
         # print(data)
         return render_template("installsensor.html",
-            home=constants["BASE_URL"] + str(constants["PORT"]["APP_PORT"]) + constants["ENDPOINTS"]["APP_MANAGER"]["home"],
-            ctrl_url = constants["BASE_URL"] + str(constants["PORT"]["CONTROLLER_PORT"]) + constants["ENDPOINTS"]["CONTROLLER_MANAGER"]["controller_home"],
+            home=SERV[CONST["VM_MAPPING"]["APP"]] + str(CONST["PORT"]["APP_PORT"]) + CONST["ENDPOINTS"]["APP_MANAGER"]["home"],
+            ctrl_url = SERV[CONST["VM_MAPPING"]["CTRL"]] + str(CONST["PORT"]["CTRL_PORT"]) + CONST["ENDPOINTS"]["CONTROLLER_MANAGER"]["controller_home"],
+            hit_install_type = SERV[CONST["VM_MAPPING"]["SENSOR"]] + str(CONST["PORT"]["SENSOR_PORT"]) + "/install_sensortype",
+            hit_install_ins = SERV[CONST["VM_MAPPING"]["SENSOR"]] + str(CONST["PORT"]["SENSOR_PORT"]) + "/install_sensorins"
         )
     except:
-        return redirect(constants["BASE_URL"] + constants["PORT"]["APP_PORT"] + constants["ENDPOINTS"]["APP_MANAGER"]["home"])
+        return redirect(SERV[CONST["VM_MAPPING"]["APP"]] + CONST["PORT"]["APP_PORT"] + CONST["ENDPOINTS"]["APP_MANAGER"]["home"])
     
+
+
+    #type_info.insert_one({"_id":0, "user_name":"Soumi"})
+    # return render_template("installsensor.html")
+    # return {"Sensor_manager":"IAS"}
+
+
+# @app.route("/init")
+# def init():
+    # return redirect("/")
 
 @app.route("/is_sensor_manager_alive")
 def is_sensor_manager_alive():
@@ -173,6 +108,49 @@ def is_sensor_manager_alive():
     return  {"status":"yes"}
 
 
+@app.route('/install_sensortype',methods=["POST"])
+def install_sensortype():
+    '''
+    Add Sensor type by Platform Admin
+    '''
+    
+    if request.method=="POST":
+        sensor_type=request.form.get("sensor_type")
+        output_type=request.form.get("output_type")
+    
+        q1 = { "sensor_type": sensor_type }
+
+        # mdl = type_info.query.get(sensor_type)
+        mdl = type_info.find(q1) 
+        alldata=[]
+        
+        for i in mdl:
+            alldata.append(i)
+        
+        
+        ans = "Given Sensor Type Alreaded Present"
+
+
+        if(len(alldata)==0):
+            #model = type_info(sensor_type=sensor_type,output_type=output_type)
+
+            if(output_type != "array" and output_type != "int" and output_type != "float" ):
+                ans = "Invalid Output Type"
+            else:
+                type_info.insert_one({"sensor_type":sensor_type, "output_type":output_type})
+                ans = "New Sensor Type Installed Successfully"
+
+    # return redirect("/")
+    return render_template("installsensor.html",
+            home=SERV[CONST["VM_MAPPING"]["APP"]] + str(CONST["PORT"]["APP_PORT"]) + CONST["ENDPOINTS"]["APP_MANAGER"]["home"],
+            ctrl_url = SERV[CONST["VM_MAPPING"]["CTRL"]] + str(CONST["PORT"]["CTRL_PORT"]) + CONST["ENDPOINTS"]["CONTROLLER_MANAGER"]["controller_home"],
+            hit_install_type = SERV[CONST["VM_MAPPING"]["SENSOR"]] + str(CONST["PORT"]["SENSOR_PORT"]) + "/install_sensortype",
+            hit_install_ins = SERV[CONST["VM_MAPPING"]["SENSOR"]] + str(CONST["PORT"]["SENSOR_PORT"]) + "/install_sensorins",
+            type_status = ans
+        )
+
+
+
 
 @app.route('/appdev_insert_type/<string:sensor_type>/<string:output_type>')
 def appdev_insert_type(sensor_type,output_type):
@@ -180,18 +158,14 @@ def appdev_insert_type(sensor_type,output_type):
     Add Sensor type by Application Manager
     '''
     
-    
-    
     q1 = { "sensor_type": sensor_type }
 
     # mdl = type_info.query.get(sensor_type)
     mdl = type_info.find(q1) 
-
     alldata=[]
     
     for i in mdl:
         alldata.append(i)
-
 
     if(len(alldata)==0):
         #model = type_info(sensor_type=sensor_type,output_type=output_type)
@@ -206,7 +180,6 @@ def list_of_sensortypes():
     '''
     
     
-
     mdl=type_info.find()
     ans=[]
     for x in mdl:
@@ -220,9 +193,9 @@ def install_sensorins():
     '''
     Add Sensor Instance by Platform Admin
     '''
- 
+    
+    
     if request.method=="POST":
-
         sensor_type=request.form.get("sensor_type")
         location=request.form.get("location")
         sensor_ip = request.form.get("sensor_ip")
@@ -235,11 +208,11 @@ def install_sensorins():
         # location=resp["location"]
         # sensor_ip=resp["sensor_ip"]
         # sensor_port=resp["sensor_port"]
-            
+        ans = "New Sensor Instance Installed Successfully"
         q1={"sensor_type": sensor_type}
         mdl=type_info.find(q1)
         flag=0
-        for x in mdl:
+        for x in mdl: 
             if(x["sensor_type"]==sensor_type):
                 flag=1
                 break
@@ -262,18 +235,32 @@ def install_sensorins():
             print(d_type)
             ins_id = str(alldata[len(alldata)-1]["_id"])
             print(ins_id)
+            
+            # send_topic = "sensorM_to_sensor"
+            # msg = {"topic":ins_id,"d_type":d_type}
+            # producer.send(send_topic,msg)
+            
+            
+            # fg=1
+            # t = threading.Thread(target=data_producer, args=[ins_id,d_type,fg])
+            # t.start()
 
-            # js = {"topic":ins_id, "output_type":d_type}
-            # post_to_producer("comm_sensor_metadata", js)
-            fg=1
-            t = threading.Thread(target=data_producer, args=[ins_id,d_type,fg])
-            t.start()
+            os.system("python3 sensor_generator.py "+str(ins_id)+" "+str(d_type))
+        else:
+            ans = "Invalid Sensor Type"
+            
             
              
-    return redirect("/")
+    # return redirect("/")
+    return render_template("installsensor.html",
+            home=SERV[CONST["VM_MAPPING"]["APP"]] + str(CONST["PORT"]["APP_PORT"]) + CONST["ENDPOINTS"]["APP_MANAGER"]["home"],
+            ctrl_url = SERV[CONST["VM_MAPPING"]["CTRL"]] + str(CONST["PORT"]["CTRL_PORT"]) + CONST["ENDPOINTS"]["CONTROLLER_MANAGER"]["controller_home"],
+            hit_install_type = SERV[CONST["VM_MAPPING"]["SENSOR"]] + str(CONST["PORT"]["SENSOR_PORT"]) + "/install_sensortype",
+            hit_install_ins = SERV[CONST["VM_MAPPING"]["SENSOR"]] + str(CONST["PORT"]["SENSOR_PORT"]) + "/install_sensorins",
+            ins_status = ans
+        )
      
     # redirect('/installsensor')            
-
 
 
 @app.route('/delete_sensorins', methods=["POST"])
@@ -311,17 +298,16 @@ def newsensorinfo():
                     ]
     }
     '''
-
+    
+    
     all = ins_info.find()
     alldata   = []
 
     for i in all:
         alldata.append(i)
 
-
     stloc = set()
     stsen = set()
-
 
     for x in alldata:
         stloc.add(x["location"])
@@ -388,7 +374,6 @@ def list_sensor_info_by_loc():
         ]
     }
     '''
-
 
 
     all = ins_info.find()
@@ -461,7 +446,6 @@ def list_sensor_info_by_loc():
 @app.route('/newsensorinfo_ap')
 def newsensorinfo_ap():
 
-
     '''
     {
         "response":"success",
@@ -486,7 +470,6 @@ def newsensorinfo_ap():
     
     all = ins_info.find()
     alldata   = []
-
     types=type_info.find()
     
     type_to_output=dict()
@@ -494,14 +477,12 @@ def newsensorinfo_ap():
         if x["output_type"] not in type_to_output:
             type_to_output[x["sensor_type"]]=x["output_type"]
 
-
     for i in all:
         alldata.append(i)
 
     stloc = set()
     stsen = set()
     
-
     for x in alldata:
         stloc.add(x["location"])
         stsen.add(x["sensor_type"])
@@ -557,8 +538,11 @@ def newsensorinfo_ap():
 
 if(__name__ == "__main__"):
     
-    init_sen()    # Initialize Old Sensors
+    # init_sen()    # Initialize Old Sensors
     
-    app.run(port=constants["PORT"]["SENSOR_PORT"], debug = True)
-    
+    initi()
 
+    # print(SERV[CONST["VM_MAPPING"]["SENSOR"]])
+    # host="0.0.0.0",
+    app.run(host="0.0.0.0",port=CONST["PORT"]["SENSOR_PORT"], debug = False)
+    
