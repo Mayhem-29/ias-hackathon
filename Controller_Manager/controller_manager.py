@@ -56,12 +56,12 @@ def add_controller_type():
     return jsonify({'message': 'Controller type added successfully', 'status_code': 200}), 200
 
 
-@app.route("/get_controller_list", methods=["POST"])
+@app.route("/get_controller_list", methods=["GET"])
 def get_controller_list():
     ctrl_list = ctrl_type_db.find()
     ctrl_list_json = []
     for ctrl in ctrl_list:
-        ctrl_list_json.append(ctrl)
+        ctrl_list_json.append(ctrl["ctrl_name"])
     return jsonify(ctrl_list_json), 200
 
 
@@ -131,4 +131,4 @@ def get_controller_instance_details_by_location():
 
 if __name__ == "__main__":
     init_controller()
-    app.run(port=constants["PORT"]["CONTROLLER_PORT"], debug=True)
+    app.run(host='0.0.0.0', port=constants["PORT"]["CONTROLLER_PORT"], debug=True)

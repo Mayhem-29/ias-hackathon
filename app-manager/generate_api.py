@@ -6,9 +6,14 @@ def generate_api(model_list, sensor_instances, controller_instances, location, f
         constant_file = open("constants.json", "r")
         constants = json.loads(constant_file.read())
         constant_file.close()
-        SENSOR_API = constants["BASE_URL"] + constants["PORT"]["APP_PORT"] + constants["ENDPOINTS"]["APP_MANAGER"]["get_sensor_data"]
-        MODEL_API = constants["BASE_URL"] + constants["PORT"]["APP_PORT"] + constants["ENDPOINTS"]["APP_MANAGER"]["get_model_predict"]
-        CONTROLLER_API = constants["BASE_URL"] + constants["PORT"]["APP_PORT"] + constants["ENDPOINTS"]["APP_MANAGER"]["send_controller_message"]
+
+        servers_file = open("servers.json", "r")
+        servers = json.loads(servers_file.read())
+        servers_file.close()
+
+        SENSOR_API = servers[constants["VM_MAPPING"]["APP"]] + constants["PORT"]["APP_PORT"] + constants["ENDPOINTS"]["APP_MANAGER"]["get_sensor_data"]
+        MODEL_API = servers[constants["VM_MAPPING"]["APP"]] + constants["PORT"]["APP_PORT"] + constants["ENDPOINTS"]["APP_MANAGER"]["get_model_predict"]
+        CONTROLLER_API = servers[constants["VM_MAPPING"]["APP"]] + constants["PORT"]["APP_PORT"] + constants["ENDPOINTS"]["APP_MANAGER"]["send_controller_message"]
 
         read_sensor_payload = '{ "sensor_instance_id": SENSOR_INSTANCE_LIST[idx] }'
         read_model_payload = '{ "model_name": MODEL_LIST[idx], "data": data }'
@@ -72,5 +77,6 @@ def post_process(data):
         print("OK2")
 
         return True
-    except:
+    except Exception as e:
+        print("exception in genrate_api", e)
         return False

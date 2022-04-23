@@ -13,7 +13,7 @@ with open("Sensors/"+topic_name+"_sensor.py", 'w') as f:
     f.write("\n\ndata_producer('"+ str(topic_name)+"','"+str(d_type)+"')")
     
 
-os.system("gnome-terminal --title=" +topic_name +" -x python3 " + "Sensors/"+topic_name+"_sensor.py")
-
+curr_pid = os.system("python " + "Sensors/"+topic_name+"_sensor.py &")
+print("Current Process Id for " + topic_name + " = " + str(curr_pid))
 
 

@@ -61,7 +61,7 @@ def initi():
 
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = "sensor_manager"
+app.config['SECRET_KEY'] = "dub_nation"
 
 @app.route("/")
 @cross_origin()
@@ -75,11 +75,11 @@ def home():
         token = request.args['jwt']
         print("HI")
 
-        # data = jwt.decode(token, app.config['SECRET_KEY'], algorithms='HS256')
-        # print(data)
+        #data = jwt.decode(token, app.config['SECRET_KEY'], algorithms='HS256')
+        #print(data)
         return render_template("installsensor.html",
             home=SERV[CONST["VM_MAPPING"]["APP"]] + str(CONST["PORT"]["APP_PORT"]) + CONST["ENDPOINTS"]["APP_MANAGER"]["home"],
-            ctrl_url = SERV[CONST["VM_MAPPING"]["CTRL"]] + str(CONST["PORT"]["CTRL_PORT"]) + CONST["ENDPOINTS"]["CONTROLLER_MANAGER"]["controller_home"],
+            ctrl_url = SERV[CONST["VM_MAPPING"]["CONTROLLER"]] + str(CONST["PORT"]["CONTROLLER_PORT"]) + CONST["ENDPOINTS"]["CONTROLLER_MANAGER"]["controller_home"],
             hit_install_type = SERV[CONST["VM_MAPPING"]["SENSOR"]] + str(CONST["PORT"]["SENSOR_PORT"]) + "/install_sensortype",
             hit_install_ins = SERV[CONST["VM_MAPPING"]["SENSOR"]] + str(CONST["PORT"]["SENSOR_PORT"]) + "/install_sensorins"
         )
@@ -143,7 +143,7 @@ def install_sensortype():
     # return redirect("/")
     return render_template("installsensor.html",
             home=SERV[CONST["VM_MAPPING"]["APP"]] + str(CONST["PORT"]["APP_PORT"]) + CONST["ENDPOINTS"]["APP_MANAGER"]["home"],
-            ctrl_url = SERV[CONST["VM_MAPPING"]["CTRL"]] + str(CONST["PORT"]["CTRL_PORT"]) + CONST["ENDPOINTS"]["CONTROLLER_MANAGER"]["controller_home"],
+            ctrl_url = SERV[CONST["VM_MAPPING"]["CONTROLLER"]] + str(CONST["PORT"]["CONTROLLER_PORT"]) + CONST["ENDPOINTS"]["CONTROLLER_MANAGER"]["controller_home"],
             hit_install_type = SERV[CONST["VM_MAPPING"]["SENSOR"]] + str(CONST["PORT"]["SENSOR_PORT"]) + "/install_sensortype",
             hit_install_ins = SERV[CONST["VM_MAPPING"]["SENSOR"]] + str(CONST["PORT"]["SENSOR_PORT"]) + "/install_sensorins",
             type_status = ans
@@ -254,7 +254,7 @@ def install_sensorins():
     # return redirect("/")
     return render_template("installsensor.html",
             home=SERV[CONST["VM_MAPPING"]["APP"]] + str(CONST["PORT"]["APP_PORT"]) + CONST["ENDPOINTS"]["APP_MANAGER"]["home"],
-            ctrl_url = SERV[CONST["VM_MAPPING"]["CTRL"]] + str(CONST["PORT"]["CTRL_PORT"]) + CONST["ENDPOINTS"]["CONTROLLER_MANAGER"]["controller_home"],
+            ctrl_url = SERV[CONST["VM_MAPPING"]["CONTROLLER"]] + str(CONST["PORT"]["CONTROLLER_PORT"]) + CONST["ENDPOINTS"]["CONTROLLER_MANAGER"]["controller_home"],
             hit_install_type = SERV[CONST["VM_MAPPING"]["SENSOR"]] + str(CONST["PORT"]["SENSOR_PORT"]) + "/install_sensortype",
             hit_install_ins = SERV[CONST["VM_MAPPING"]["SENSOR"]] + str(CONST["PORT"]["SENSOR_PORT"]) + "/install_sensorins",
             ins_status = ans

@@ -5,7 +5,7 @@ import sys
 import json
 from threading import Thread
 from azure.storage.fileshare import ShareFileClient
-import generate_docker_file as gdf
+from generate_docker_file import generate_dockerfile
 import file_storage
 import psutil
 from zipfile import ZipFile
@@ -28,7 +28,7 @@ servers = read_json("servers.json")
 IP_ADDR = constants["KAFKA_HOST_ADDR"]
 VM1_PORT = 9650
 CONNECTION_STR = "https://hackathonfilestorage.file.core.windows.net/DefaultEndpointsProtocol=https;AccountName=hackathonfilestorage;AccountKey=gdZHKPvMvlkDnpMcxMxu2diC/bRqvjptH7qJlbx5VI/95L/p6H932ZOTZwg5kuWbyUJ6Y8TCrh3nqIlyG+YD2g==;EndpointSuffix=core.windows.net"
-vmip1 = "20.219.16.7"
+vmip1 = "20.219.100.230"
 
 myclient=pymongo.MongoClient("mongodb+srv://hackathon:hackathon@hackathon.wgs03.mongodb.net/Hackathon?retryWrites=true&w=majority")
 mydb=myclient["Hackathon"]
@@ -77,7 +77,6 @@ def run_application(app_inst_id):
         return {"status" : "false", "message" : "No Port Available"}
     
     port_dict[app_inst_id] = key
-    print("App path: " , app_path)
 
     temp = nodedb.update_one({ "_id": ObjectId(node_id)},
                 { "$push": { 'list_of_app_inst': app_inst_id}}
@@ -93,11 +92,11 @@ def run_application(app_inst_id):
     unzip_file(app_inst_id + ".zip",os.getcwd()+"/"+app_inst_id)
     os.remove(app_inst_id + ".zip")
 
-    gdf.generate_dockerfile(curr_port, os.getcwd() + "/" + app_inst_id)
+    generate_dockerfile(curr_port, os.getcwd() + "/" + app_inst_id)
 
     os.system(f"zip -r {app_inst_id}.zip {app_inst_id}")
-    os.system(f"sshpass -p 'Yash@1998' scp -o StrictHostKeyChecking=no {app_inst_id}.zip yash@localhost:/home/yash/azureuser")
-    os.system(f"sshpass -p Yash@1998 ssh yash@localhost 'cd /home/yash/azureuser/;unzip {app_inst_id}.zip;cd {app_inst_id};sudo docker build -t {app_inst_id}:latest .;sudo docker run --net=host -it -d -p {curr_port}:{curr_port} {app_inst_id}'")
+    os.system(f"sshpass -p 'Abc@azureuser' scp -o StrictHostKeyChecking=no {app_inst_id}.zip azureuser@localhost:/home/azureuser/code/ias-hackathon")
+    os.system(f"sshpass -p Abc@azureuser ssh azureuser@localhost 'cd /home/azureuser/code/ias-hackathon;unzip {app_inst_id}.zip;cd {app_inst_id};sudo docker build -t {app_inst_id}:latest .;sudo docker run --net=host -it -d -p {curr_port}:{curr_port} {app_inst_id}'")
 
     print("app running at port {}".format(curr_port))
     
@@ -136,7 +135,7 @@ def stop_application(app_inst_id):
             
 
     print("kill_time")
-    os.system(f"sshpass -p Yash@1998 ssh yash@localhost 'sudo docker stop $(sudo docker ps -q --filter ancestor={app_inst_id});sudo docker image remove -f {app_inst_id}'")
+    os.system(f"sshpass -p Abc@azureuser ssh azureuser@localhost 'sudo docker stop $(sudo docker ps -q --filter ancestor={app_inst_id});sudo docker image remove -f {app_inst_id}'")
 
     ports[kill_port] = "False"
 
@@ -163,12 +162,14 @@ def read_topic():
         )
 
     for msg in consumer:
-        command = json.loads(msg)
+        command = json.loads(msg.value)
         commands = command.split()
 
         if commands[0] == "get_cpu_util":
             ram_percent = send_cpu_util()
-            producer.send(topic = "LB_topic", value = ram_percent)
+            data = vmip1 + " " + str(ram_percent)
+            print(data)
+            producer.send(topic = "LB_topic", value = data)
         elif commands[0] == "run" and commands[1] == vmip1:
             status = run_application(commands[2])
         elif command[0] == "stop" and commands[1] == vmip1:
@@ -181,6 +182,6 @@ if __name__=="__main__":
     thread1=Thread(target=read_topic)
     thread1.start()
     
-    app.run(port=VM1_PORT)
+    app.run(host='0.0.0.0', port=constants["PORT"]["VM1_PORT"])
 
     thread1.join()

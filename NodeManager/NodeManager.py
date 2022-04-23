@@ -94,7 +94,7 @@ def get_schedule_app():
         deploy["node_id"]=node_id
         print(load_reply["message"])
     
-    status = session.post(servers[constants["VM_MAPPING"]["DEPLOYER"]]+constants["PORT"]["DEPLOYER_PORT"]+constants["ENDPOINTS"]["DEPLOYER_MANAGER"]["send_to_deployer"],json={'stand_alone':req['stand_alone']}).json()
+    status = session.post(servers[constants["VM_MAPPING"]["DEPLOYER"]]+constants["PORT"]["DEPLOYER_PORT"]+constants["ENDPOINTS"]["DEPLOYER_MANAGER"]["send_to_deployer"],json=deploy).json()
     """
     status={
         "status"
@@ -105,4 +105,4 @@ def get_schedule_app():
 
 
 if __name__=="__main__":
-    app.run(port=constants["PORT"]["NODE_PORT"], debug=True)
+    app.run(host='0.0.0.0', port=constants["PORT"]["NODE_PORT"], debug=True)

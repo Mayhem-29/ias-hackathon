@@ -68,7 +68,7 @@ def hello():
         data_scientist=servers[constants["VM_MAPPING"]["MODEL"]] + str(constants["PORT"]["MODEL_PORT"]) + constants["ENDPOINTS"]["AI_MANAGER"]["ai_home"],
         admin=servers[constants["VM_MAPPING"]["SENSOR"]] + str(constants["PORT"]["SENSOR_PORT"]) + constants["ENDPOINTS"]["SENSOR_MANAGER"]["admin"],
         developer=servers[constants["VM_MAPPING"]["APP"]] + str(constants["PORT"]["APP_PORT"]) + constants["ENDPOINTS"]["APP_MANAGER"]["developer"],
-        user=servers[constants["VM_MAPPING"]["APP"]] + str(constants["PORT"]["APP_PORT"]) + constants["ENDPOINTS"]["APP_MANAGER"]["user"],
+        user=servers[constants["VM_MAPPING"]["APP"]] + str(constants["PORT"]["APP_PORT"]) + constants["ENDPOINTS"]["APP_MANAGER"]["user"]
     )
 
 
@@ -79,7 +79,9 @@ def dev():
         token = request.args['jwt']
         data = jwt.decode(token, app.config['SECRET_KEY'], algorithms='HS256')
         return render_template("appdeveloper.html",
-            home=servers[constants["VM_MAPPING"]["APP"]] + str(constants["PORT"]["APP_PORT"]) + constants["ENDPOINTS"]["APP_MANAGER"]["home"]
+            home=servers[constants["VM_MAPPING"]["APP"]] + str(constants["PORT"]["APP_PORT"]) + constants["ENDPOINTS"]["APP_MANAGER"]["home"],
+            get_available_resources = servers[constants["VM_MAPPING"]["APP"]] + str(constants["PORT"]["APP_PORT"]) + constants["ENDPOINTS"]["APP_MANAGER"]["get_available_resources"],
+            upload_url = servers[constants["VM_MAPPING"]["APP"]] + str(constants["PORT"]["APP_PORT"]) + constants["ENDPOINTS"]["APP_MANAGER"]["upload_application"]
         )
     except:
         return redirect("/")
@@ -93,7 +95,9 @@ def enduser():
         token = request.args['jwt']
         data = jwt.decode(token, app.config['SECRET_KEY'], algorithms='HS256')
         return render_template("enduser.html",
-            home=servers[constants["VM_MAPPING"]["APP"]] + str(constants["PORT"]["APP_PORT"]) + constants["ENDPOINTS"]["APP_MANAGER"]["home"]
+            home=servers[constants["VM_MAPPING"]["APP"]] + str(constants["PORT"]["APP_PORT"]) + constants["ENDPOINTS"]["APP_MANAGER"]["home"],
+            get_app_list = servers[constants["VM_MAPPING"]["APP"]] + str(constants["PORT"]["APP_PORT"]) + constants["ENDPOINTS"]["APP_MANAGER"]["get_app_list"],
+            deploy_app = servers[constants["VM_MAPPING"]["APP"]] + str(constants["PORT"]["APP_PORT"]) + constants["ENDPOINTS"]["APP_MANAGER"]["deploy_app"]
         )
     except:
         return redirect("/")
@@ -164,16 +168,16 @@ def get_sensor_instances(app_name, sensors, location):
 
 
 def get_controller_instances(app_name, controllers, location):
-    resp = req_sess.get(servers[constants["VM_MAPPING"]["CONTROLLER"]] + str(constants["PORT"]["CONTROLLER_PORT"]) + constants["ENDPOINTS"]["CONTROLLER_MANAGER"]["list_controller_info_by_loc"], json={ 'location': location }).json()
+    resp = req_sess.post(servers[constants["VM_MAPPING"]["CONTROLLER"]] + str(constants["PORT"]["CONTROLLER_PORT"]) + constants["ENDPOINTS"]["CONTROLLER_MANAGER"]["get_controller_instance_details_by_location"], json={ 'location': location }).json()
     controller_instance_list = resp["response"]
-    print(controller_instance_list)
+    print(controller_instance_list, "=====================", controllers)
     final_instances = list()
     for type in controllers:
         added = False
         for ctrl in controller_instance_list:
             if added ==True:
                 break
-            if ctrl["ctrl_type"] == type:
+            if ctrl["ctrl_type"] == type["controller_type"]:
                 for ins in ctrl["ctrl_instance_list"]:
                     if ins["ctrl_instance_id"] not in final_instances:
                         final_instances.append(ins["ctrl_instance_id"])
@@ -314,7 +318,7 @@ def deploy_app():
         "stand_alone": standalone #bool
     }
     #change with kafka
-    response = req_sess.post(servers[constants["VM_MAPPING"]["SCHEDULER"]] + str(constants["PORT"]["SCH_PORT"]) + constants["ENDPOINTS"]["SCHEDULER_MANAGER"]["deploy_app"], json=payload) 
+    response = req_sess.post(servers[constants["VM_MAPPING"]["SCHEDULER"]] + str(constants["PORT"]["SCHEDULER_PORT"]) + constants["ENDPOINTS"]["SCHEDULER_MANAGER"]["deploy_app"], json=payload) 
     return {
         "status_code": 200,
         "message": response.text
@@ -411,7 +415,8 @@ def upload_application():
             "app_name": config['app_config']['app_name'],
             "app_author": config['app_config']['app_author'],
             "models": models_list,
-            "sensors": config['sensor_type_config']
+            "sensors": config['sensor_type_config'],
+            "controllers": config['controller_type_config']
         }
 
         AppDB.insert_one(app_info)
@@ -427,4 +432,4 @@ def upload_application():
 
 
 if(__name__ == "__main__"):
-    app.run(port=constants["PORT"]["APP_PORT"], debug=False)
+    app.run(host='0.0.0.0', port=constants["PORT"]["APP_PORT"], debug=False)

@@ -99,7 +99,7 @@ def send_to_deployer():
         }
         
     else:
-        node_info = nodedb.find_one({"_id":ObjectId(nodeid)})
+        node_info = nodedb.find_one({"_id":ObjectId(node_id)})
         nodeip = node_info["ip"]
 
         command = "run " + nodeip + " " + app_inst_id
@@ -114,4 +114,4 @@ def send_to_deployer():
     return status
 
 if __name__=="__main__":
-    app.run(port=constants["PORT"]["DEPLOYER_PORT"], debug=True) 
+    app.run(host="0.0.0.0", port=constants["PORT"]["DEPLOYER_PORT"], debug=True) 

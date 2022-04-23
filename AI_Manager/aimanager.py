@@ -209,4 +209,4 @@ def upload():
       return redirect (servers[constants["VM_MAPPING"]["APP"]] + str(constants["PORT"]["APP_PORT"]) + constants["ENDPOINTS"]["APP_MANAGER"]["home"])   
 
 if(__name__ == "__main__"):
-    app.run(port=MODEL_PORT, debug=True)
+    app.run(host='0.0.0.0', port=MODEL_PORT, debug=True)

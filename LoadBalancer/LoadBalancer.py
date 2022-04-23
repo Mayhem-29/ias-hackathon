@@ -87,4 +87,4 @@ def get_node_id():
 
 
 if __name__=="__main__":
-    app.run(port=constants["PORT"]["LOAD_PORT"], debug=True)
+    app.run(host='0.0.0.0', port=constants["PORT"]["LOAD_PORT"], debug=True)

@@ -60,14 +60,14 @@ def data_producer(topic,data_type):
             print(msg)
             producer.send(topic,msg)
             # print("Producer : ", msg)
-            time.sleep(2.5)
+            # time.sleep(2.5)
     elif(data_type == "float"):
         while True:
             msg = int(random.random()*100)/100
             print(msg)
             producer.send(topic,msg)
             # print("Producer : ", msg)
-            time.sleep(2.5)
+            # time.sleep(2.5)
     elif(data_type=='array'):
         while True:
             f=open("data.json")
@@ -77,7 +77,7 @@ def data_producer(topic,data_type):
             print(msg)
             producer.send(topic,msg)
             # print("Producer : ", msg)
-            time.sleep(2.5)
+            # time.sleep(2.5)
 
 
 admin_client = KafkaAdminClient(

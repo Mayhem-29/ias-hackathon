@@ -1,6 +1,16 @@
 {
-    "vm1": "http://loaclhost:",
-    "vm2": "http://loaclhost:",
+    "vm1": "http://localhost:",
+    "vm2": "http://localhost:",
     "vm3": "http://loaclhost:",
-    "vm4": "http://loaclhost:"
+    "vm4": "http://loaclhost:",
+
+    "vm1_username": "Yash",
+    "vm2_username": "Yash",
+    "vm3_username": "azureuser",
+    "vm4_username": "azureuser",
+
+    "vm1_password": "Yash@1998",
+    "vm2_password": "Yash@1998",
+    "vm3_password": "Abc@azureuser",
+    "vm4_password": "Abc@azureuser"
 }

@@ -20,7 +20,7 @@
             "location" : location
          }
          console.log(send_json)
-         fetch (`http://localhost:9400/deploy_app` , {
+         fetch (`{{ deploy_app }}` , {
             method : "POST",
             body : JSON.stringify(send_json),
             headers : {
@@ -34,7 +34,7 @@
       }
 
       show = (e) => {
-         fetch (`http://localhost:9400/get_app_list`)
+         fetch (`{{ get_app_list }}`)
          .then (resp =>resp.json())
          .then (data => {
             list = document.getElementById('app-list')

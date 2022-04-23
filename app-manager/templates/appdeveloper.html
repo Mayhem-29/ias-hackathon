@@ -4,7 +4,7 @@
   <title>App Developer | MLOps Seva</title>
    <script>
       show = (e) => {
-         fetch(`http://localhost:9400/get_available_resources`)
+         fetch(`{{ get_available_resources }}`)
          .then ( resp => resp.json())
          .then(data => {
                var list = document.getElementById('model-list')
@@ -27,6 +27,18 @@
                sensor_list.forEach(element => {
                   let li = document.createElement("div");
                   li.classList.add("sensor-list-item");
+                  li.innerText = element;
+                  console.log(element)
+                  list.appendChild(li);
+               });
+
+               var list = document.getElementById('controller-list')
+               list.innerText = ""
+               var sensor_list = data['controllers']
+               console.log(model_list)
+               sensor_list.forEach(element => {
+                  let li = document.createElement("div");
+                  li.classList.add("controller-list-item");
                   li.innerText = element;
                   console.log(element)
                   list.appendChild(li);
@@ -78,12 +90,12 @@
          flex: 1;
       }
 
-      div#model-list, div#sensor-list {
+      div#model-list, div#sensor-list, div#controller-list {
          display: flex;
          flex-wrap: wrap;
       }
 
-      .model-list-item, .sensor-list-item {
+      .model-list-item, .sensor-list-item, .controller-list-item {
          display: flex;
          justify-content: center;
          align-items: center;
@@ -211,16 +223,16 @@
             </div>
          </div>
          <hr>
-         <!-- <div class="sub-container">
+         <div class="sub-container">
             <div class="title">Controllers</div>
             <div id="controller-list">
                
             </div>
-         </div> -->
-         <!-- <hr> -->
+         </div>
+         <hr>
          <div class="sub-container">
             <div class="title">Application Upload Form</div>
-            <form action = "http://localhost:9400/upload_application" method = "POST" enctype = "multipart/form-data">
+            <form action = "{{ upload_url }}" method = "POST" enctype = "multipart/form-data">
                <div class="form-control">
                   <div class="label">Application Details</div>
                   <label class="upload-button" for="app_file">Upload zip file</label>

@@ -173,6 +173,7 @@ def termination_function():
             deployer_obj={}
             deployer_obj["app_inst_id"]=appInstId
             deployer_obj["end_status"]=1
+             
             response=sess.post(servers[constants["VM_MAPPING"]["NODE"]]+constants["PORT"]["NODE_PORT"]+constants["ENDPOINTS"]["NODE_MANAGER"]["get_schedule_app"],json=deployer_obj).json()
             #response=sess.post(endpoint['node_manager']['base_url'] + endpoint['node_manager']['uri']['get_schedule_app'],json=deployer_obj).json()
             mycollection.delete_one({"app_inst_id": appInstId})
@@ -188,7 +189,7 @@ if __name__=="__main__":
     thread1.start()
     thread2.start()
 
-    app.run(port=constants["PORT"]["NODE_PORT"])
+    app.run(host='0.0.0.0', port=constants["PORT"]["SCHEDULER_PORT"])
 
     thread1.join()
     thread2.join()

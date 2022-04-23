@@ -115,6 +115,7 @@ def validate_zip(file_name):
     try:
         app_config_json = read_json(folder_name + "/app_config.json")
         sensor_config_json = read_json(folder_name + "/sensor_type_config.json")
+        controller_config_json = read_json(folder_name + "/controller_type_config.json")
     except FileNotFoundError as e:
         return {
             'status_code': 500,
@@ -123,7 +124,8 @@ def validate_zip(file_name):
 
     return {
         "app_config": app_config_json,
-        "sensor_type_config": sensor_config_json
+        "sensor_type_config": sensor_config_json,
+        "controller_type_config": controller_config_json
     }
 
     # app_name = app_config_json["app_name"]
