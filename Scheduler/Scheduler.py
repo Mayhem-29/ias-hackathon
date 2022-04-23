@@ -117,8 +117,9 @@ def deployerApp(appInfo):
     deployer_obj["end_status"]=0
 
     # print("72...sending to node manager to deploy")
+    print("Going to node manager")
     response=sess.post(servers[constants["VM_MAPPING"]["NODE"]]+constants["PORT"]["NODE_PORT"]+constants["ENDPOINTS"]["NODE_MANAGER"]["get_schedule_app"],json=deployer_obj).json()
-
+    print("back from node manager")
     """
     1)response status = true
         1.1)calculate the end time
@@ -137,18 +138,19 @@ def deployerApp(appInfo):
         rem=duration%24
         hours=math.floor(rem)
         min=math.floor((rem-hours)*60)
-        date_time = datetime.strptime(appInfo[0] + ":00", '%Y-%m-%d %H:%M:%S')
+        # date_time = datetime.strptime(appInfo[0] + ":00", '%Y-%m-%d %H:%M:%S')
+        date_time=str(datetime.now(pytz.timezone('Asia/Kolkata'))).split()
+        date_time=date_time[0]
         end_date=date_time + timedelta(days=days_num)
         end_time=str(end_date)+" "+str(hours)+":"+str(min)
         end_time = end_time.rsplit(':',2)[0]
         #this end_time is  String
         #1.2
         heapq.heappush(Termination_queue,(end_time,appInfo[2]))
-    
+        mycollection.update_one({"app_inst_id":appInfo[2]},{"$set":{"kill_time":end_time}})
     #2
-    # mycollection.delete_one({"app_inst_id": appInfo[2]})
-    mycollection.update_one({"app_inst_id":appInfo[2]},{"$set":{"kill_time":end_time}})
-   
+    else:
+        mycollection.delete_one({"app_inst_id": appInfo[2]})
 
 
 def scheduling_function():
@@ -173,7 +175,9 @@ def termination_function():
             deployer_obj={}
             deployer_obj["app_inst_id"]=appInstId
             deployer_obj["end_status"]=1
+            print("to node manager")
             response=sess.post(servers[constants["VM_MAPPING"]["NODE"]]+constants["PORT"]["NODE_PORT"]+constants["ENDPOINTS"]["NODE_MANAGER"]["get_schedule_app"],json=deployer_obj).json()
+            print("back from node manager")
             #response=sess.post(endpoint['node_manager']['base_url'] + endpoint['node_manager']['uri']['get_schedule_app'],json=deployer_obj).json()
             mycollection.delete_one({"app_inst_id": appInstId})
             print(response["message"]) #application killed or not
@@ -188,7 +192,7 @@ if __name__=="__main__":
     thread1.start()
     thread2.start()
 
-    app.run(port=constants["PORT"]["NODE_PORT"])
+    app.run(host = "0.0.0.0", port=constants["PORT"]["SCHEDULER_PORT"], debug = True)
 
     thread1.join()
     thread2.join()
