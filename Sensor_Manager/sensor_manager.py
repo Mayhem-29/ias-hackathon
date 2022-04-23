@@ -52,8 +52,9 @@ def initi():
         topic_n = str(i["_id"])
         # os.system("gnome-terminal -x python3 Sensors/" + topic_n+"_sensor.py")
 
-        os.system("gnome-terminal --title=" +topic_n +" -x python3 " + "Sensors/"+topic_n+"_sensor.py")
-
+        # os.system("gnome-terminal --title=" +topic_n +" -x python3 " + "Sensors/"+topic_n+"_sensor.py")
+        curr_pid = os.system("python " + "Sensors/"+topic_n+"_sensor.py &")
+        print("Current Process Id for " + topic_n + " = " + str(curr_pid))
 
 
 
