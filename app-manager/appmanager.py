@@ -1,4 +1,3 @@
-from email.policy import default
 import requests
 from flask import Flask, redirect, render_template, session, jsonify, request, url_for
 from pymongo import MongoClient
@@ -121,6 +120,7 @@ def get_sensor_data():
 @app.route("/get_model_predict", methods=["POST"])
 def get_model_predict():
     req = request.get_json()
+    print(req)
     resp = requests.post(servers[constants["VM_MAPPING"]["MODEL"]] + str(constants["PORT"]["MODEL_PORT"]) + constants["ENDPOINTS"]["AI_MANAGER"]["get_prediction"], json=req).json()
     return resp
 
@@ -131,7 +131,7 @@ def send_controller_message():
         print("Sending data to controller")
         req = request.get_json()
         print(req)
-        kafka_util.send_to_topic(req["controller_instance_id"], req["data"])
+        kafka_util.post_to_producer(req["controller_instance_id"], req["data"])
         return jsonify({"message" : "Successfully sent the message", "status_code" : 200}), 200
     except Exception as e:
         print(e)
@@ -144,13 +144,14 @@ def get_sensor_instances(app_name, sensors, location):
     sensors_list = req_sess.get(servers[constants["VM_MAPPING"]["SENSOR"]] + str(constants["PORT"]["SENSOR_PORT"]) + constants["ENDPOINTS"]["SENSOR_MANAGER"]["list_sensor_info_by_loc"]).json()
     print(sensors_list)
     sensor_instance_list = list()
-    final_instances = set()
+    final_instances = dict()
 
 #filter by locaion
     for obj in sensors_list['resp']:
         if obj['location'] == location:
             sensor_instance_list.append(obj)
 
+    total_added = 0
     for sensor in sensors:
         for ins in sensor_instance_list:
             if(ins['sensor_type'] == sensor['sensor_type']):
@@ -158,20 +159,22 @@ def get_sensor_instances(app_name, sensors, location):
                     return jsonify({ 'status_code': 500, 'message': 'No sensors available' })
                 else:
                     for i in ins['sensor_ins']:
-                        if i not in final_instances:
-                            final_instances.add(i)
+                        if ins['sensor_type'] not in final_instances:
+                            final_instances[ins['sensor_type']] = list()
+                        if i not in final_instances[ins['sensor_type']]:
+                            final_instances[ins['sensor_type']].append(i)
+                            total_added += 1
     
-    if len(final_instances) != len(sensors):
-        return {'status_code': 500, 'message': 'No sensors available'}
-    else:
-        return {'status_code': 200, 'final_instances': list(final_instances)}
+    return {'status_code': 200, 'final_instances': dict(final_instances)}
 
 
 def get_controller_instances(app_name, controllers, location):
     resp = req_sess.post(servers[constants["VM_MAPPING"]["CONTROLLER"]] + str(constants["PORT"]["CONTROLLER_PORT"]) + constants["ENDPOINTS"]["CONTROLLER_MANAGER"]["get_controller_instance_details_by_location"], json={ 'location': location }).json()
     controller_instance_list = resp["response"]
     print(controller_instance_list, "=====================", controllers)
-    final_instances = list()
+    final_instances = dict()
+
+    total_added = 0
     for type in controllers:
         added = False
         for ctrl in controller_instance_list:
@@ -179,16 +182,17 @@ def get_controller_instances(app_name, controllers, location):
                 break
             if ctrl["ctrl_type"] == type["controller_type"]:
                 for ins in ctrl["ctrl_instance_list"]:
-                    if ins["ctrl_instance_id"] not in final_instances:
-                        final_instances.append(ins["ctrl_instance_id"])
+                    if ctrl["ctrl_type"] not in final_instances:
+                        final_instances[ctrl["ctrl_type"]] = list()
+
+                    if ins["ctrl_instance_id"] not in final_instances[ctrl["ctrl_type"]]:
+                        final_instances[ctrl["ctrl_type"]].append(ins["ctrl_instance_id"])
                         added = True
-                        break
+                        total_added += 1
+                        # break
 
     print(final_instances)
-    if len(final_instances) != len(controllers):
-        return {'status_code': 500, 'message': 'No controllers available'}
-    else:
-        return {'status_code': 200, 'final_instances': list(final_instances)}
+    return {'status_code': 200, 'final_instances': dict(final_instances)}
 
 
 def generate_api_file(model_list, sensor_instances, controller_instances, location, folder, app_name):
@@ -321,7 +325,7 @@ def deploy_app():
     response = req_sess.post(servers[constants["VM_MAPPING"]["SCHEDULER"]] + str(constants["PORT"]["SCHEDULER_PORT"]) + constants["ENDPOINTS"]["SCHEDULER_MANAGER"]["deploy_app"], json=payload) 
     return {
         "status_code": 200,
-        "message": response.text
+        "message": response.json()
     }
 
 
@@ -432,4 +436,4 @@ def upload_application():
 
 
 if(__name__ == "__main__"):
-    app.run(host='0.0.0.0', port=constants["PORT"]["APP_PORT"], debug=False)
+    app.run(host='0.0.0.0', port=constants["PORT"]["APP_PORT"], debug=True)

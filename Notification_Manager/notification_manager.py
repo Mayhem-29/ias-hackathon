@@ -32,7 +32,7 @@ constants = read_json("constants.json")
 @cross_origin()
 def send_email():
     email_details = request.get_json()
-    sender = "ashishrai96@hotmail.com"
+    sender = "mlopsseva@gmail.com"
     if "from_email" in email_details:
         sender = email_details["from_email"]
     receiver = email_details['to_email']
@@ -42,11 +42,17 @@ def send_email():
     email_text = 'Subject: {}\n\n{}'.format(subject, message)
 
     try:
-        smtpObj = smtplib.SMTP('smtp.live.com', 587)
+        print("smtp object creation")
+        smtpObj = smtplib.SMTP('smtp.gmail.com', 587)
+        print("smtp object created")
         smtpObj.ehlo()
+        print("ehlo done")
         smtpObj.starttls()
-        smtpObj.login(sender, "wbkyoeptuiwimyfi")
+        print("starttls done")
+        smtpObj.login(sender, "Abc@azureuser")
+        print("logged in")
         smtpObj.sendmail(from_addr=sender, to_addrs=[receiver], msg=email_text)
+        print("sent email")
         smtpObj.quit()
         print("Successfully sent email")
         return jsonify({'message': 'Email sent successfully', 'status_code': 200}), 200

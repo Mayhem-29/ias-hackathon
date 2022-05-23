@@ -10,3 +10,4 @@ pymongo==4.1.0
 six==1.16.0
 Werkzeug==2.1.1
 zipp==3.8.0
+kafka-python==2.0.2

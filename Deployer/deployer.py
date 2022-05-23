@@ -86,6 +86,7 @@ def send_to_deployer():
     if node_id == "":
         app_info = appdb.find_one({"_id": ObjectId(app_inst_id)})
         nodeid = app_info["node_id"]
+        print("Going to kill the app on node id:", str(node_id))
         node_info = nodedb.find_one({"_id":ObjectId(nodeid)})
         nodeip = node_info["ip"]
 
@@ -99,6 +100,7 @@ def send_to_deployer():
         }
         
     else:
+        print("Gonna launch app on this node: ", str(node_id))
         node_info = nodedb.find_one({"_id":ObjectId(node_id)})
         nodeip = node_info["ip"]
 

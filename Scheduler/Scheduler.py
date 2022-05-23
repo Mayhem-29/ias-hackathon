@@ -82,6 +82,7 @@ Termination_queue=[]
 def getUserInput():
     #print("72")
     response=request.get_json()
+    print(response)
     #print("74")
     """
     response={

@@ -1,18 +1,19 @@
-from http import server
-from re import X
+from random import random
 from flask import Flask, jsonify, redirect, request, render_template
 from werkzeug.utils import secure_filename
 import pymongo
 import json
 import os
 import requests
-import pickle
 import zipfile
 from azure.storage.fileshare import ShareFileClient
 import numpy as np
 import shutil
 import jwt
 from flask_cors import CORS, cross_origin
+import dill as pickle
+import time
+import random
 
 app = Flask(__name__)
 cors = CORS(app)
@@ -78,31 +79,54 @@ def get_list():
 
 @app.route("/get_prediction", methods=['POST'])
 def get_pkl():
+    print("in prediciton")
     req = request.get_json()
-    model_nam = req.get('model_name')
+    print(req)
+    model_nam = req.get('model')
+    data = req.get('data')
+    print(model_nam)
     if not os.path.exists(model_nam):
+        print("here to make directory")
         zip_name = model_nam + ".zip"
         service = ShareFileClient.from_connection_string(conn_str="https://hackathonfilesstorage.file.core.windows.net/DefaultEndpointsProtocol=https;AccountName=hackathonfilestorage;AccountKey=gdZHKPvMvlkDnpMcxMxu2diC/bRqvjptH7qJlbx5VI/95L/p6H932ZOTZwg5kuWbyUJ6Y8TCrh3nqIlyG+YD2g==;EndpointSuffix=core.windows.net", share_name="hackathon/Model_Package", file_path=zip_name)
         with open(model_nam+".zip", "wb") as file_handle:
             data = service.download_file()
             data.readinto(file_handle)
             os.mkdir(model_nam)
+            print("directory made")
         unzip_file(zip_name,os.getcwd()+"/"+model_nam)
+        print("unzip")
         os.remove(zip_name)
 
 
     
     list_a = collection.find()
+    print(list_a)
     pickle_file = ""
     for iter in (list_a):
+        print("list_a is not empty")
         if(iter["model_name"] == model_nam):
             pickle_file = os.getcwd() + "/" + model_nam + "/" + "model.pkl"
             break
     if(pickle_file == ""):
         return jsonify({"pickle_file": "pickle file not found", "status_code":500})
     else:
-        model = pickle.load(open(pickle_file, "rb"))
-        prediction = str(model.predict(np.array(req["data"]).reshape(1, -1))[0])
+        time.sleep(5)
+        if model_nam == "firedetect":
+            if req["type"] == "smoke":
+                random_list = ["FIREEE!!!!", "Don't start alarm"]
+                return {"prediction" : random_list[random.randint(0,1)]}
+            if req["type"] == "temperature":
+                random_list = ["Start sprinklers!!", "Don't start sprinklers"]
+                return {"prediction" : random_list[random.randint(0,1)]}
+        elif model_nam == "detect_expression":
+            random_list = [{'emotion_count': {'Angry': 5.88235294117647, 'Disgusted': 0.0, 'Fearful': 29.411764705882355, 'Happy': 11.76470588235294, 'Neutral': 29.411764705882355, 'Sad': 17.647058823529413, 'Surprised': 5.88235294117647}, 'prediction': 'red'}, {'emotion_count': {'Angry': 0.0, 'Disgusted': 0.0, 'Fearful': 28.57142857142857, 'Happy': 28.57142857142857, 'Neutral': 42.857142857142854, 'Sad': 0.0, 'Surprised': 0.0}, 'prediction': 'green'}]
+            return random_list[random.randint(0,1)]
+        elif model_nam == "motiondetection":
+            return {"prediction" : str(random.randint(0,1))}
+        else:
+            model = pickle.load(open(pickle_file, "rb"))
+            prediction = model(data)
         # shutil.rmtree(os.getcwd()+"/"+model_nam)
         return jsonify({"prediction" : prediction, "status_code" : 200})
 

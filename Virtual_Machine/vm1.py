@@ -95,8 +95,8 @@ def run_application(app_inst_id):
     generate_dockerfile(curr_port, os.getcwd() + "/" + app_inst_id)
 
     os.system(f"zip -r {app_inst_id}.zip {app_inst_id}")
-    os.system(f"sshpass -p 'Abc@azureuser' scp -o StrictHostKeyChecking=no {app_inst_id}.zip azureuser@localhost:/home/azureuser/code/ias-hackathon")
-    os.system(f"sshpass -p Abc@azureuser ssh azureuser@localhost 'cd /home/azureuser/code/ias-hackathon;unzip {app_inst_id}.zip;cd {app_inst_id};sudo docker build -t {app_inst_id}:latest .;sudo docker run --net=host -it -d -p {curr_port}:{curr_port} {app_inst_id}'")
+    os.system(f"sshpass -p 'Abc@azureuser' scp -o StrictHostKeyChecking=no {app_inst_id}.zip azureuser@20.219.100.230:/home/azureuser/code/ias-hackathon")
+    os.system(f"sshpass -p Abc@azureuser ssh azureuser@20.219.100.230 'cd /home/azureuser/code/ias-hackathon;unzip {app_inst_id}.zip;cd {app_inst_id};sudo docker build -t {app_inst_id}:latest .;sudo docker run --net=host -it -d -p {curr_port}:{curr_port} {app_inst_id}'")
 
     print("app running at port {}".format(curr_port))
     
@@ -135,7 +135,7 @@ def stop_application(app_inst_id):
             
 
     print("kill_time")
-    os.system(f"sshpass -p Abc@azureuser ssh azureuser@localhost 'sudo docker stop $(sudo docker ps -q --filter ancestor={app_inst_id});sudo docker image remove -f {app_inst_id}'")
+    os.system(f"sshpass -p Abc@azureuser ssh azureuser@20.219.100.230 'sudo docker stop $(sudo docker ps -q --filter ancestor={app_inst_id});sudo docker image remove -f {app_inst_id}'")
 
     ports[kill_port] = "False"
 

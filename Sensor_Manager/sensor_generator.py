@@ -10,6 +10,7 @@ with open("Sensors/"+topic_name+"_sensor.py", 'w') as f:
     f.write("from kafka_fun import *")
     # f.write("\n\ncreate_topic('"+ str(topic_name)+"')\n")
 
+
     f.write("\n\ndata_producer('"+ str(topic_name)+"','"+str(d_type)+"')")
     
 

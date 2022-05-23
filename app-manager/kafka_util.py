@@ -4,7 +4,12 @@ from kafka.admin import KafkaAdminClient, NewTopic
 from kafka import KafkaProducer, KafkaConsumer
 
 
-KAFKA_SERVER_ADDR = "13.71.94.55:9092"
+CONSTANTS = '' 
+
+with open("constants.json","r") as f:
+    CONSTANTS = json.load(f)
+
+KAFKA_SERVER_ADDR = CONSTANTS["KAFKA_HOST_ADDR"]
 
 admin_client = KafkaAdminClient(
     bootstrap_servers = [KAFKA_SERVER_ADDR]
@@ -59,7 +64,7 @@ def read_from_topic(topic):
             topic,
             bootstrap_servers = [KAFKA_SERVER_ADDR],
             enable_auto_commit = True,
-            consumer_timeout_ms = 2000
+            consumer_timeout_ms = 5000
         )
         print("consumer made")
         msg_list = list()

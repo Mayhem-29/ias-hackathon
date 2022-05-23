@@ -47,12 +47,27 @@ ins_info = db["sensor_instance_info"]
 ############################################################################################################
 
 def initi():
+    # all = ins_info.find()
+    # for i in all:
+    #     topic_n = str(i["_id"])
+    #     # os.system("gnome-terminal -x python3 Sensors/" + topic_n+"_sensor.py")
+
+    #     os.system("gnome-terminal --title=" +topic_n +" -x python3 " + "Sensors/"+topic_n+"_sensor.py")
     all = ins_info.find()
     for i in all:
         topic_n = str(i["_id"])
         # os.system("gnome-terminal -x python3 Sensors/" + topic_n+"_sensor.py")
 
-        os.system("gnome-terminal --title=" +topic_n +" -x python3 " + "Sensors/"+topic_n+"_sensor.py")
+        # os.system("gnome-terminal --title=" +topic_n +" -x python3 " + "Sensors/"+topic_n+"_sensor.py")
+        
+        q1 = {"sensor_type":str(i["sensor_type"])}
+        ab = type_info.find(q1)
+
+        for x in ab:
+            d_type = x["output_type"]
+        
+        os.system("python3 sensor_generator.py "+str(topic_n)+" "+str(d_type))
+
 
 
 
@@ -134,11 +149,8 @@ def install_sensortype():
         if(len(alldata)==0):
             #model = type_info(sensor_type=sensor_type,output_type=output_type)
 
-            if(output_type != "array" and output_type != "int" and output_type != "float" ):
-                ans = "Invalid Output Type"
-            else:
-                type_info.insert_one({"sensor_type":sensor_type, "output_type":output_type})
-                ans = "New Sensor Type Installed Successfully"
+            type_info.insert_one({"sensor_type":sensor_type, "output_type":output_type})
+            ans = "New Sensor Type Installed Successfully"
 
     # return redirect("/")
     return render_template("installsensor.html",

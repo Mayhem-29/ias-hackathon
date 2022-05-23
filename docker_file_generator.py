@@ -10,6 +10,7 @@ def generate_dockerfile(port,folder,file):
     destination="/app"
     f.write("FROM python:3\n")
     f.write("RUN  apt-get update\n\n")
+    f.write("RUN apt install -y libgl1-mesa-glx\n\n")
     f.write("RUN apt install sshpass\n\n")
     f.write("RUN apt install zip\n\n")
     f.write("WORKDIR /app\n")

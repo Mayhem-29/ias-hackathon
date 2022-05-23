@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, jsonify
 from flask_cors import CORS
 from pymongo import MongoClient
 import json, os
+import kafka_util 
 
 
 app = Flask(__name__)
@@ -73,7 +74,8 @@ def add_controller_instance():
     ctrl_port = request.form.get("ctrl_port")
 
     try:
-        ctrl_instance_db.insert_one({"ctrl_type": ctrl_type, "location": location, "ctrl_ip": ctrl_ip, "ctrl_port": ctrl_port})
+        id = ctrl_instance_db.insert_one({"ctrl_type": ctrl_type, "location": location, "ctrl_ip": ctrl_ip, "ctrl_port": ctrl_port})
+        kafka_util.create_topic(id.inserted_id)
         return jsonify({'message': 'Controller instance added successfully', 'status_code': 200}), 200
     except Exception as e:
         print(e)
@@ -130,5 +132,5 @@ def get_controller_instance_details_by_location():
 
 
 if __name__ == "__main__":
-    init_controller()
+    # init_controller()
     app.run(host='0.0.0.0', port=constants["PORT"]["CONTROLLER_PORT"], debug=True)
